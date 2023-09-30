@@ -5,9 +5,10 @@ import tkinter as tk
 
 import pandas as pd
 
+counter = 0
 
 def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_label: tk.Label):
-    # If the destination direcorty already exists, delete it
+    # If the destination directory already exists, delete it
     if os.path.exists('merged_asv_data'):
         shutil.rmtree('merged_asv_data')
 
@@ -22,7 +23,7 @@ def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_la
     # Set the progress bar text label
     status_label.config(text='Merging data...')
 
-    # For each and every filtered data directory, create a twin direcory in the destination directory
+    # For each and every filtered data directory, create a twin directory in the destination directory
     for dirname in os.listdir('filtered_data'):
         os.makedirs(f'merged_asv_data/{dirname}')
 
@@ -77,11 +78,13 @@ def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_la
         _save_to_csv(mdata, dirname)
 
     shutil.rmtree('filtered_data')
+    print(counter)
 
 def _save_to_csv(mdata, dirname):
+    global counter
     for kit, d in mdata.items():
 
-        formatted_data = {'Kingdom': [], 'Philum': [], 'Class': [], 'Order': [], 'Family': [], 'Genus': [],
+        formatted_data = {'kit_id': [], 'Kingdom': [], 'Philum': [], 'Class': [], 'Order': [], 'Family': [], 'Genus': [],
             'Species': [], 'F': [], 'R': [], 'S': [], 'Fr': []}
 
         for id, probs in d.items():
@@ -91,6 +94,7 @@ def _save_to_csv(mdata, dirname):
             id = [s.split('__') for s in id]
 
             # Add the data to a dict
+            formatted_data['kit_id'].append(kit)
             formatted_data['Kingdom'].append(id[0][1].replace('_', ' ') if id[0][1] != '' else '__')
             formatted_data['Philum'].append(id[1][1].replace('_', ' ') if id[1][1] != '' else '__')
             formatted_data['Class'].append(id[2][1].replace('_', ' ') if id[2][1] != '' else '__')
@@ -100,8 +104,8 @@ def _save_to_csv(mdata, dirname):
             formatted_data['Species'].append(id[6][1].replace('_', ' ') if id[6][1] != '' else '__')
             for sample in ['F', 'R', 'S', 'Fr']:
                 formatted_data[sample].append(float(probs[sample]))
-
+            counter += 1
         # Convert the dict to a CSV file
         formatted_df = pd.DataFrame.from_dict(formatted_data)
-        formatted_df.to_csv(path_or_buf=f'merged_asv_data/{dirname}/S{kit}.csv')
+        formatted_df.to_csv(path_or_buf=f'merged_asv_data/{dirname}/S{kit}.csv', index=False)
 

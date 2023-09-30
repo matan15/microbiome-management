@@ -9,6 +9,8 @@ from tkinter.ttk import Progressbar
 import data_filter
 import file_merger
 
+from command_script.command_script import generate_command
+
 dir_entry = None
 select_button = None
 submit_button = None
@@ -16,6 +18,7 @@ progress_var = None
 progress_bar = None
 percentage_label = None
 status_label = None
+check_var = None
 
 
 def perform_actions():
@@ -42,10 +45,10 @@ def perform_actions():
         status_label.config(text='All files has been generated!')
 
         bad_dir = True
-        # Ask for a new detination if merged data already exists in the selected one
+        # Ask for a new destination if merged data already exists in the selected one
         while bad_dir:
             try:
-                # Ask for a directory and copy all the data to the detination
+                # Ask for a directory and copy all the data to the destination
                 path = filedialog.askdirectory()
                 for dirname in os.listdir('merged_asv_data'):
                     os.makedirs(f'{path}/merged_asv_data/{dirname}')
@@ -53,16 +56,15 @@ def perform_actions():
                         with open(f'{path}/merged_asv_data/{dirname}/{filename}', 'w') as f:
                             shutil.copy2(f'merged_asv_data/{dirname}/{filename}',
                                          f'{path}/merged_asv_data/{dirname}/{filename}')
-
-                # Delete the local "merged_asv_data" directory
-                shutil.rmtree("merged_asv_data")
+                if check_var == 1:
+                    generate_command()
 
                 # Enable the buttons once again
                 submit_button.config(state=tk.NORMAL)
                 select_button.config(state=tk.NORMAL)
 
                 # Alert the users when the files have been saved successfully
-                showinfo("Saved successfuly", "The files have been save successfuly as 'merged_asv_data' directory.")
+                showinfo("Saved successfully", "The files have been save successfully as 'merged_asv_data' directory.")
 
                 bad_dir = False
 
@@ -97,13 +99,13 @@ def select_dir():
 
 
 def run_gui():
-    global dir_entry, select_button, submit_button, progress_var, progress_bar, percentage_label, status_label
+    global dir_entry, select_button, submit_button, progress_var, progress_bar, percentage_label, status_label, check_var
     # Create the main window
     root = tk.Tk()
     root.title('Samples Marger')
 
     # Set the size and the color of the window
-    root.geometry('400x350')
+    root.geometry('400x400')
     root.configure(bg='#f0f0f0')
 
     # Create a title for the application
@@ -138,7 +140,12 @@ def run_gui():
 
     # Create a label to display the status message
     status_label = tk.Label(root, text='', font=('Helvetica', 12))
-    status_label.pack(pady=10)
+    status_label.pack()
+
+    # Create a checkbox to generate a command bulk
+    check_var = tk.IntVar()
+    generate_check = tk.Checkbutton(root, text="generate bulk command", variable=check_var, onvalue=1, offvalue=0, font=('Helvetica', 14))
+    generate_check.pack()
 
     # run the application
     root.mainloop()
