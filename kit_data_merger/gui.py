@@ -9,6 +9,8 @@ from tkinter.ttk import Progressbar
 import data_filter
 import file_merger
 
+import sys
+sys.path.append("../")
 from command_script.command_script import generate_command
 
 dir_entry = None
