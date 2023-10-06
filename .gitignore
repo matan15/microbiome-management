@@ -1,2 +1,5 @@
 env
 __pycache__
+AWS/config.py
+merged_asv_data
+filtered_data

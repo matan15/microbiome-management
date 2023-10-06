@@ -5,33 +5,39 @@ This project is designed to merge sample data from different plant areas (root, 
 
 The samples are part of a microbiome research program, and the files are merged by sample kits.
 
-## Run the project
+## Setup the project
 
-Clone the project
+### Clone the project
 
 ```bash
   git clone https://github.com/matan15/kit-data-merger.git
 ```
 
-Go to the project directory
+### Go to the project directory
 
 ```bash
   cd kit-data-merger
 ```
 
-Create an environment and activate it
+### Create an environment and activate it
 
 ```bash
   python -m venv env && cd env/Scripts && activate && cd ../..
 ```
 
-Install requirements
+### Install requirements
 
 ```bash
-  pip install -r equirements.txt
+  pip install -r requirements.txt
 ```
 
-Run the project
+### Set the configuration file
 ```bash
-  python kit_data_merger/kit_data_merger.py
+  python set_config.py
+```
+Answer the questions that you will be asked.
+
+### Run the project
+```bash
+  python main.py
 ```

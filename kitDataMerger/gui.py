@@ -1,3 +1,13 @@
+import sys
+import os
+
+sys.path.append("../")
+
+from AWS.connect_ES import fetch_and_index_data
+
+parent_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(parent_dir)
+
 import os
 import shutil
 import threading
@@ -6,12 +16,8 @@ from tkinter import filedialog
 from tkinter.messagebox import showinfo, showerror
 from tkinter.ttk import Progressbar
 
-import data_filter
-import file_merger
-
-import sys
-sys.path.append("../")
-from command_script.command_script import generate_command
+from .data_filter import filter
+from .file_merger import merge_data
 
 dir_entry = None
 select_button = None
@@ -34,14 +40,17 @@ def perform_actions():
     select_button.config(state=tk.DISABLED)
 
     # Call the filter and merge functions
-    if data_filter.filter(selected_dir, progress_var, percentage_label, status_label):
+    if filter(selected_dir, progress_var, percentage_label, status_label):
 
         # Initialising the progress bar
         percentage_label.config(text='0%')
         status_label.config(text='Working...')
 
         # Merge files
-        file_merger.merge_data(progress_var, percentage_label, status_label)
+        num_files = merge_data(progress_var, percentage_label, status_label)
+
+        if check_var.get() == 1:
+            fetch_and_index_data(progress_var, percentage_label, status_label, num_files)
 
         # Update the status message when all the files have been merged
         status_label.config(text='All files has been generated!')
@@ -52,14 +61,13 @@ def perform_actions():
             try:
                 # Ask for a directory and copy all the data to the destination
                 path = filedialog.askdirectory()
-                for dirname in os.listdir('merged_asv_data'):
-                    os.makedirs(f'{path}/merged_asv_data/{dirname}')
-                    for filename in os.listdir(f'merged_asv_data/{dirname}'):
-                        with open(f'{path}/merged_asv_data/{dirname}/{filename}', 'w') as f:
-                            shutil.copy2(f'merged_asv_data/{dirname}/{filename}',
-                                         f'{path}/merged_asv_data/{dirname}/{filename}')
-                if check_var == 1:
-                    generate_command()
+                os.makedirs(f"{path}/merged_asv_data")
+                for filename in os.listdir(f'{parent_dir}/merged_asv_data'):
+                    with open(f'{path}/merged_asv_data/{filename}', 'w') as f:
+                        shutil.copy2(f'{parent_dir}/merged_asv_data/{filename}',
+                                     f'{path}/merged_asv_data/{filename}')
+
+                shutil.rmtree(f"{parent_dir}/merged_asv_data")
 
                 # Enable the buttons once again
                 submit_button.config(state=tk.NORMAL)
@@ -146,7 +154,7 @@ def run_gui():
 
     # Create a checkbox to generate a command bulk
     check_var = tk.IntVar()
-    generate_check = tk.Checkbutton(root, text="generate bulk command", variable=check_var, onvalue=1, offvalue=0, font=('Helvetica', 14))
+    generate_check = tk.Checkbutton(root, text="Upload to OpenSearch", variable=check_var, onvalue=1, offvalue=0, font=('Helvetica', 14))
     generate_check.pack()
 
     # run the application

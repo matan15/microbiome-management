@@ -1,4 +1,4 @@
-from gui import run_gui
+from kitDataMerger.gui import run_gui
 
 
 def main():

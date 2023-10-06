@@ -1,13 +1,17 @@
 import os
+import sys
+
+parent_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(parent_dir)
+
 import re
 import shutil
 import tkinter as tk
 
-
 def filter(data_dir: str, progress_var: tk.DoubleVar, percentage_label: tk.Label, status_label: tk.Label):
     # If the destination direcorty already exists, delete it
-    if os.path.exists('filtered_data'):
-        shutil.rmtree('filtered_data')
+    if os.path.exists(f'{parent_dir}/filtered_data'):
+        shutil.rmtree(f'{parent_dir}/filtered_data')
 
     # Initialise a filtered-file counter to track progress
     progress_counter = 0
@@ -22,19 +26,17 @@ def filter(data_dir: str, progress_var: tk.DoubleVar, percentage_label: tk.Label
     status_label.config(text='Filtering data...')
 
     # For each and every raw data directory, create a twin direcory in the destination directory
+    os.makedirs(f'{parent_dir}/filtered_data')
     for dirname in os.listdir(data_dir):
-        os.makedirs(f'filtered_data/{dirname}')
-
         # Try to read the ASV directory from the raw data
         try:
-
             # Iterate through all the files in the ASV directory
             for filename in os.listdir(f'{data_dir}/{dirname}/ASV'):
 
                 # If the filename matches the pattern (S[number][any other text]), copy it to the filtered data directory
                 if re.match(r'S\d+', filename):
-                    with open(f'filtered_data/{dirname}/{filename}', 'w') as f:
-                        shutil.copy2(f'{data_dir}/{dirname}/ASV/{filename}', f'filtered_data/{dirname}/{filename}')
+                    with open(f'{parent_dir}/filtered_data/{filename}', 'w') as f:
+                        shutil.copy2(f'{data_dir}/{dirname}/ASV/{filename}', f'{parent_dir}/filtered_data/{filename.upper() if not "Fr" in filename else filename}')
 
                 # Count the file as "filtered", calculate and update the progress
                 progress_counter += 1
