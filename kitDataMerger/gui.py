@@ -8,7 +8,6 @@ from AWS.connect_ES import fetch_and_index_data
 parent_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(parent_dir)
 
-import os
 import shutil
 import threading
 import tkinter as tk
@@ -18,6 +17,7 @@ from tkinter.ttk import Progressbar
 
 from .data_filter import filter
 from .file_merger import merge_data
+from .meta_data_merger import merge_meta_data
 
 dir_entry = None
 select_button = None
@@ -55,6 +55,8 @@ def perform_actions():
         # Update the status message when all the files have been merged
         status_label.config(text='All files has been generated!')
 
+        merge_meta_data()
+
         bad_dir = True
         # Ask for a new destination if merged data already exists in the selected one
         while bad_dir:
@@ -66,8 +68,6 @@ def perform_actions():
                     with open(f'{path}/merged_asv_data/{filename}', 'w') as f:
                         shutil.copy2(f'{parent_dir}/merged_asv_data/{filename}',
                                      f'{path}/merged_asv_data/{filename}')
-
-                shutil.rmtree(f"{parent_dir}/merged_asv_data")
 
                 # Enable the buttons once again
                 submit_button.config(state=tk.NORMAL)
