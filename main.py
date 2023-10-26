@@ -1,9 +1,7 @@
-import sys
-import os
-
-sys.path.append("../")
-
 from AWS.connect_ES import fetch_and_index_data
+
+import os
+import sys
 
 parent_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(parent_dir)
@@ -15,9 +13,9 @@ from tkinter import filedialog
 from tkinter.messagebox import showinfo, showerror
 from tkinter.ttk import Progressbar
 
-from .data_filter import filter
-from .file_merger import merge_data
-from .meta_data_merger import merge_meta_data
+from kitDataMerger.data_filter import filter
+from kitDataMerger.file_merger import merge_data
+from kitDataMerger.meta_data_merger import merge_meta_data
 
 dir_entry = None
 select_dir_button = None
@@ -68,12 +66,12 @@ def perform_actions():
                 # Ask for a directory and copy all the data to the destination
                 path = filedialog.askdirectory()
                 os.makedirs(f"{path}/merged_asv_data")
-                for filename in os.listdir(f'{parent_dir}/merged_asv_data'):
+                for filename in os.listdir(f'{parent_dir}/kitDataMerger/merged_asv_data'):
                     with open(f'{path}/merged_asv_data/{filename}', 'w') as f:
-                        shutil.copy2(f'{parent_dir}/merged_asv_data/{filename}',
+                        shutil.copy2(f'{parent_dir}/kitDataMerger/merged_asv_data/{filename}',
                                      f'{path}/merged_asv_data/{filename}')
 
-                shutil.rmtree(f"{parent_dir}/merged_asv_data")
+                shutil.rmtree(f"{parent_dir}/kitDataMerger/merged_asv_data")
 
                 # Enable the buttons once again
                 submit_button.config(state=tk.NORMAL)
@@ -184,3 +182,6 @@ def run_gui():
 
     # run the application
     root.mainloop()
+
+if __name__ == '__main__':
+    run_gui()

@@ -1,48 +1,97 @@
-import sys
 import os
+import sys
 
 parent_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(parent_dir)
 
-import requests
-from .config import *
+from opensearchpy import OpenSearch, helpers
 import pandas as pd
-import tkinter as tk
+from .config import *
+import logging
+import numpy as np
 
-headers = {"Content-Type": "application/x-ndjson"}
+logger = logging.getLogger('ES')
 
-index_name = "fungi-api-test-mt"
+client = OpenSearch(
+    hosts=[{'host': ES_host, 'port': ES_port}],
+    http_compress=True,
+    http_auth=(ES_user, ES_password),
+    use_ssl=True,
+    verify_certs=True,
+    ssl_assert_hostname=False,
+    ssl_show_warn=False
+)
 
-# Elasticsearch configuration
-es_url = f'https://{ES_user}:{ES_password}@{ES_host}/{index_name}/_bulk/'
-
-def fetch_and_index_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_label: tk.Label, num_files):
-    progress_counter = 0
-    status_label.config(text="Uploading...")
+def _parse_cords(raw_cords):
     try:
-        for file in os.listdir(f"{parent_dir}/../kitDataMerger/merged_asv_data"):
-            # Index data into Elasticsearch
-            df = pd.read_csv(f"{parent_dir}/../kitDataMerger/merged_asv_data/{file}")
-            records = df.to_dict(orient='records')
-            bulk_str = ''
-            for rec in records:
-                bulk_str += '{"index": {"_index": "' + index_name + '"}}\n' + str(rec).replace("'", '"') + "\n"
+        split_cords = raw_cords.split(',')
+    except AttributeError:
+        return
+    return {"lat": float(split_cords[0]), "lon": float(split_cords[1])}
 
-            es_response = requests.post(es_url, data=bulk_str, headers=headers)
+def _create_index(client, mappings, index_name):
+    if not client.indices.exists(index=index_name):
+        client.indices.create(index=index_name, body=mappings)
 
-            progress_counter += 1
-            progress = (progress_counter / num_files) * 100
-            progress_var.set(progress)
-            percentage_label.config(text=(('%.2f ' % progress) + '%'))
+def _save_docs(progress_var, percentage_label, num_files, index_name):
+    progress_counter = 0
+    counter = 1
+    for file in os.listdir(f"{parent_dir}/../kitDataMerger/Fungi_meta_data"):
+        # Index data into Elasticsearch
+        df = pd.read_csv(f"{parent_dir}/../kitDataMerger/Fungi_meta_data/{file}")
+        records = df.to_dict(orient='records')
+        bulk_str = ''
+        skip = False
+        for rec in records:
+            try:
+                cords = _parse_cords(rec['Coordination'])
+                if cords:
+                    rec['Coordination'] = cords
+                else:
+                    rec.pop('Coordination')
+            except KeyError:
+                skip = True
+                break
+            bulk_str += '{"index": {"_index": "' + index_name + '", "_id": ' + str(counter) + ' }}\n' + str(rec).replace("'", '"').replace("nan", '""').replace("ח\"צ", "ח\\\"צ") + "\n"
+            counter += 1
 
-            # Handle errors or log success
-            if es_response.status_code != 200:
-                print(f"Failed to index: {es_response.text}")
-            else:
-                print(f"Indexed successfully")
+        if not skip:
+            client.bulk(bulk_str)
 
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+        progress_counter += 1
+        progress = (progress_counter / num_files) * 100
+        progress_var.set(progress)
+        percentage_label.config(text=(('%.2f ' % progress) + '%'))
 
-if __name__ == "__main__":
+
+
+
+def fetch_and_index_data(progress_var, percentage_label, status_label, num_files):
+    request_body = {
+        'mappings': {
+            'properties': {
+                'Coordination': {
+                    'type': 'geo_point'
+                },
+                'F': {
+                    'type': 'double'
+                },
+                'R': {
+                    'type': 'double'
+                },
+                'S': {
+                    'type': 'double'
+                },
+                'Fr': {
+                    'type': 'double'
+                }
+            }
+        }
+    }
+    status_label.config(text="Uploading...")
+    _create_index(client, request_body, "fungi-samples-v1")
+    _save_docs(progress_var=progress_var, percentage_label=percentage_label, num_files=num_files, index_name="fungi-samples-v1")
+
+
+if __name__ == '__main__':
     fetch_and_index_data()

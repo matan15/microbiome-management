@@ -18,7 +18,8 @@ def get_config():
             configfile.write(f"""ES_host = "{host}"
 ES_user = "{user}"
 ES_password = "{password}"
-ES_port = {port}""")
+ES_port = "{port}"
+""")
         print(colored("Configuration saved to config.py", "green", attrs=["bold"]))
     else:
         print(colored("Configuration already exists, you can start upload the data.", "green", attrs=["bold"]))
