@@ -4,11 +4,11 @@ import sys
 parent_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(parent_dir)
 
-from opensearchpy import OpenSearch, helpers
+
+from opensearchpy import OpenSearch
 import pandas as pd
 from .config import *
 import logging
-import numpy as np
 
 logger = logging.getLogger('ES')
 
@@ -43,6 +43,7 @@ def _save_docs(progress_var, percentage_label, num_files, index_name):
         bulk_str = ''
         skip = False
         for rec in records:
+            rec['fdtz'] = int(rec['F'] > 0) + int(rec['Fr'] > 0) + int(rec['S'] > 0) + int(rec['R'] > 0)
             try:
                 cords = _parse_cords(rec['Coordination'])
                 if cords:

@@ -3,3 +3,5 @@ __pycache__
 AWS/config.py
 merged_asv_data
 filtered_data
+Fungi_meta_data
+.idea

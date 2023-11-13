@@ -33,7 +33,7 @@ def perform_actions():
     # Get the value of the field (the path)
     selected_dir = dir_entry.get()
     selected_meta = meta_entry.get()
-    if not selected_dir and not selected_meta:
+    if not selected_dir or not selected_meta:
         return
 
     # Disable the "Browse" and "Submit" buttons
@@ -121,7 +121,7 @@ def run_gui():
     global dir_entry, meta_label, meta_entry, select_meta_button, select_dir_button, submit_button, progress_var, progress_bar, percentage_label, status_label, check_var
     # Create the main window
     root = tk.Tk()
-    root.title('Samples Marger')
+    root.title('Samples Merger')
 
     # Set the size and the color of the window
     root.geometry('400x515')
