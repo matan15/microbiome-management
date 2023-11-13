@@ -72,6 +72,7 @@ def perform_actions():
                                      f'{path}/merged_asv_data/{filename}')
 
                 shutil.rmtree(f"{parent_dir}/kitDataMerger/merged_asv_data")
+                shutil.rmtree(f"{parent_dir}/kitDataMerger/Fungi_meta_data")
 
                 # Enable the buttons once again
                 submit_button.config(state=tk.NORMAL)

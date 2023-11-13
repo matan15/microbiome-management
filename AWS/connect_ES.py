@@ -43,7 +43,10 @@ def _save_docs(progress_var, percentage_label, num_files, index_name):
         bulk_str = ''
         skip = False
         for rec in records:
-            rec['fdtz'] = int(rec['F'] > 0) + int(rec['Fr'] > 0) + int(rec['S'] > 0) + int(rec['R'] > 0)
+            rec['count_F'] = int(rec['F'] > 0)
+            rec['count_R'] = int(rec['R'] > 0)
+            rec['count_S'] = int(rec['S'] > 0)
+            rec['count_Fr'] = int(rec['Fr'] > 0)
             try:
                 cords = _parse_cords(rec['Coordination'])
                 if cords:
