@@ -5,3 +5,6 @@ merged_asv_data
 filtered_data
 Fungi_meta_data
 .idea
+meta_data_final.csv
+*.log
+.env

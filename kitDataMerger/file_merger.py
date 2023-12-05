@@ -1,8 +1,4 @@
 import os
-import sys
-
-parent_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(parent_dir)
 
 import re
 import shutil
@@ -12,22 +8,20 @@ import pandas as pd
 
 def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_label: tk.Label):
     # If the destination directory already exists, delete it
-    if os.path.exists(f'{parent_dir}/merged_asv_data'):
-        shutil.rmtree(f'{parent_dir}/merged_asv_data')
+    if os.path.exists(f'./kitDataMerger/merged_asv_data'):
+        shutil.rmtree(f'./kitDataMerger/merged_asv_data')
 
     # Initialise a merged-file counter to track progress
     progress_counter = 0
 
     # Count how many files to be merged are there
-    num_files = 0
-    for root_dir, cur_dir, files in os.walk(f'{parent_dir}/filtered_data'):
-        num_files += len(files)
+    num_files = sum([len(files) for root_dir, cur_dir, files in os.walk(f'./kitDataMerger/filtered_data')])
 
     # Set the progress bar text label
     status_label.config(text='Merging data...')
 
     # For each and every filtered data directory, create a twin directory in the destination directory
-    os.makedirs(f'{parent_dir}/merged_asv_data')
+    os.makedirs(f'./kitDataMerger/merged_asv_data')
 
     # Create a dictionary that will hold the merged data in the future, in the following format:
     # {
@@ -44,7 +38,7 @@ def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_la
     mdata = {}
 
     # Iterate through all the filtered files
-    for filename in os.listdir(f'{parent_dir}/filtered_data'):
+    for filename in os.listdir(f'./kitDataMerger/filtered_data'):
 
         # Clean filename from extension and irrelevent info
         clean_filename = filename.split('.')[0].split('_')[0]
@@ -62,7 +56,7 @@ def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_la
         sample = sample.upper() if sample != "Fr" else sample
 
         # Use Pandas to read the filtered data
-        df = pd.read_csv(f'{parent_dir}/filtered_data/{filename}')
+        df = pd.read_csv(f'./kitDataMerger/filtered_data/{filename}')
 
         # Format the data into a dictionary
         df_dict = df.to_dict(orient='index')
@@ -79,7 +73,7 @@ def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_la
         progress_var.set(progress)
         percentage_label.config(text=(('%.2f ' % progress) + '%'))
 
-    shutil.rmtree(f'{parent_dir}/filtered_data')
+    shutil.rmtree(f'./kitDataMerger/filtered_data')
     return _save_to_csv(mdata)
 
 def _sum_prob(d):
@@ -126,6 +120,6 @@ def _save_to_csv(mdata):
 
         # Convert the dict to a CSV file
         formatted_df = pd.DataFrame.from_dict(formatted_data)
-        formatted_df.to_csv(path_or_buf=f'{parent_dir}/merged_asv_data/S_{kit}_Fungi.csv', index=False)
+        formatted_df.to_csv(path_or_buf=f'./kitDataMerger/merged_asv_data/S_{kit}_Fungi.csv', index=False)
     return m_files_counter
 

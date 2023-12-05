@@ -1,21 +1,51 @@
-from AWS.connect_ES import fetch_and_index_data
-
 import os
 import sys
 
-parent_dir = os.path.dirname(os.path.realpath(__file__))
+parent_dir = os.path.dirname(os.getcwd())
 sys.path.append(parent_dir)
 
 import shutil
 import threading
 import tkinter as tk
 from tkinter import filedialog
-from tkinter.messagebox import showinfo, showerror
+from tkinter.messagebox import showinfo, showerror, showwarning
 from tkinter.ttk import Progressbar
+
+from set_config import get_config
+
+import requests as req
+
+import logging
+from datetime import datetime
+
+def is_internet_available():
+    try:
+        response = req.get("https://www.google.com", timeout=5)
+        response.raise_for_status()
+        return True
+    except req.RequestException:
+        pass
+    return False
+
+while not os.path.exists(".env"):
+    showerror("No credentials found", "It seems that you are running this program for the first time, So the program couldn't find any credentials. please answer on the question the will appear after you will click 'ok'.")
+    get_config()
+
+while not is_internet_available():
+    showwarning("Connection error", "The program is requiring internet connection. It seems that you are not connected to the internet, please check your connection and click ok")
+
+from GCS.connect_ES import fetch_and_index_data
 
 from kitDataMerger.data_filter import filter
 from kitDataMerger.file_merger import merge_data
 from kitDataMerger.meta_data_merger import merge_meta_data
+
+from kitDataMerger.meteorology.get_weather import update_weather
+
+log_file_path = f"./logs/kit_data_merger-{datetime.now().strftime('%d-%m-%Y-%H.%M.%S')}.log"
+logging.basicConfig(filename=log_file_path, level=logging.DEBUG, filemode="a+", format="%(asctime)s | %(levelname)s | %(message)s", datefmt="%d/%m/%Y %I:%M:%S %p")
+
+logger = logging.getLogger(__name__)
 
 dir_entry = None
 select_dir_button = None
@@ -28,6 +58,8 @@ check_var = None
 meta_label = None
 meta_entry = None
 select_meta_button = None
+status_sub_label = None
+generate_check = None
 
 def perform_actions():
     # Get the value of the field (the path)
@@ -40,6 +72,9 @@ def perform_actions():
     submit_button.config(state=tk.DISABLED)
     select_dir_button.config(state=tk.DISABLED)
     select_meta_button.config(state=tk.DISABLED)
+    dir_entry.config(state=tk.DISABLED)
+    meta_entry.config(state=tk.DISABLED)
+    generate_check.config(state=tk.DISABLED)
 
     # Call the filter and merge functions
     if filter(selected_dir, progress_var, percentage_label, status_label):
@@ -51,13 +86,17 @@ def perform_actions():
         # Merge files
         num_files = merge_data(progress_var, percentage_label, status_label)
 
-        merge_meta_data(selected_meta)
+        status_label.config(text="Getting weather:")
+        update_weather(selected_meta, 32, progress_var, percentage_label, status_sub_label)
+
+        merge_meta_data()
 
         if check_var.get() == 1:
             fetch_and_index_data(progress_var, percentage_label, status_label, num_files)
 
         # Update the status message when all the files have been merged
         status_label.config(text='All files has been generated!')
+        status_sub_label.config(text="")
 
         bad_dir = True
         # Ask for a new destination if merged data already exists in the selected one
@@ -65,22 +104,18 @@ def perform_actions():
             try:
                 # Ask for a directory and copy all the data to the destination
                 path = filedialog.askdirectory()
-                os.makedirs(f"{path}/merged_asv_data")
-                for filename in os.listdir(f'{parent_dir}/kitDataMerger/merged_asv_data'):
-                    with open(f'{path}/merged_asv_data/{filename}', 'w') as f:
-                        shutil.copy2(f'{parent_dir}/kitDataMerger/merged_asv_data/{filename}',
-                                     f'{path}/merged_asv_data/{filename}')
+                os.makedirs(f"{path}/Fungi_meta_data")
+                for filename in os.listdir(f'kitDataMerger/Fungi_meta_data'):
+                    with open(f'{path}/Fungi_meta_data/{filename}', 'w') as f:
+                        shutil.copy2(f'kitDataMerger/Fungi_meta_data/{filename}',
+                                     f'{path}/Fungi_meta_data/{filename}')
 
-                shutil.rmtree(f"{parent_dir}/kitDataMerger/merged_asv_data")
-                shutil.rmtree(f"{parent_dir}/kitDataMerger/Fungi_meta_data")
-
-                # Enable the buttons once again
-                submit_button.config(state=tk.NORMAL)
-                select_dir_button.config(state=tk.NORMAL)
-                select_meta_button.config(state=tk.NORMAL)
+                shutil.rmtree(f"./kitDataMerger/merged_asv_data")
+                shutil.rmtree(f"./kitDataMerger/Fungi_meta_data")
+                os.remove(f"./kitdataMerger/meteorology/meta_data_final.csv")
 
                 # Alert the users when the files have been saved successfully
-                showinfo("Saved successfully", "The files have been save successfully as 'merged_asv_data' directory.")
+                showinfo("Saved successfully", "The files have been save successfully as 'Fungi_meta_data' directory.")
 
                 bad_dir = False
 
@@ -96,9 +131,19 @@ def perform_actions():
     else:
         # Show a message if there is no ASV directory
         status_label.config(text='No ASV directory')
+    
+
+    with open(log_file_path, 'r') as log_file:
+        content = log_file.read()
+        if 'ERROR' in content:
+            showwarning("Some errors occured", f"There was some errors while processing and uploading the data, check the log file '{os.path.abspath(log_file_path)}'")
 
     submit_button.config(state=tk.NORMAL)
     select_dir_button.config(state=tk.NORMAL)
+    select_meta_button.config(state=tk.NORMAL)
+    dir_entry.config(state=tk.NORMAL)
+    meta_entry.config(state=tk.NORMAL)
+    generate_check.config(state=tk.NORMAL)
 
 
 def start_processing():
@@ -119,13 +164,13 @@ def select_file():
     meta_entry.insert(0, file_path)
 
 def run_gui():
-    global dir_entry, meta_label, meta_entry, select_meta_button, select_dir_button, submit_button, progress_var, progress_bar, percentage_label, status_label, check_var
+    global dir_entry, meta_label, meta_entry, select_meta_button, select_dir_button, submit_button, progress_var, progress_bar, percentage_label, status_label, check_var, status_sub_label, generate_check
     # Create the main window
     root = tk.Tk()
     root.title('Samples Merger')
 
     # Set the size and the color of the window
-    root.geometry('400x515')
+    root.geometry('400x530')
     root.configure(bg='#f0f0f0')
 
     # Create a title for the application
@@ -176,9 +221,12 @@ def run_gui():
     status_label = tk.Label(root, text='', font=('Helvetica', 12))
     status_label.pack()
 
+    status_sub_label = tk.Label(root, text='', font=('Helvetica', 12))
+    status_sub_label.pack()
+
     # Create a checkbox to generate a command bulk
     check_var = tk.IntVar()
-    generate_check = tk.Checkbutton(root, text="Upload to OpenSearch", variable=check_var, onvalue=1, offvalue=0, font=('Helvetica', 14))
+    generate_check = tk.Checkbutton(root, text="Upload to Kibana", variable=check_var, onvalue=1, offvalue=0, font=('Helvetica', 14))
     generate_check.pack()
 
     # run the application

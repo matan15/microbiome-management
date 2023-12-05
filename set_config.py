@@ -1,30 +1,52 @@
-import sys
-import os
-
-parent_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(parent_dir)
-
-from termcolor import colored
+from tkinter import simpledialog
+from tkinter.messagebox import askyesno
 
 def get_config():
-    prompt_style = colored("What is the {}? ", "white", attrs=["bold"])
-    if not os.path.exists(f"{parent_dir}/AWS/config.py"):
-        host = input(prompt_style.format("Open Search host"))
-        user = input(prompt_style.format("Open Search user name"))
-        password = input(prompt_style.format("Open Search password"))
-        port = input(prompt_style.format("Open Search Port"))
+    with open(".env", 'w') as envFile:
+        envFile.write("")
 
-        with open('./AWS/config.py', 'w') as configfile:
-            configfile.write(f"""ES_host = "{host}"
-ES_user = "{user}"
-ES_password = "{password}"
-ES_port = "{port}"
-""")
-        print(colored("Configuration saved to config.py", "green", attrs=["bold"]))
-    else:
-        print(colored("Configuration already exists, you can start upload the data.", "green", attrs=["bold"]))
-    
+    with open(".env", 'r') as envFile:
+        initial_content = envFile.read()
 
-if __name__ == "__main__":
-    
-    get_config()
+    if "cloud_id" in initial_content and "user" in initial_content and "password" in initial_content and "API_KEY" in initial_content:
+        return
+
+    with open(".env", 'a') as envFile:
+        if not 'ELASTIC' in initial_content:
+            envFile.write("# ELASTICSEARCH\n")
+            cloud_id = simpledialog.askstring("Configure credentials", "Enter the cloud Id:")
+            while not cloud_id:
+                answer = askyesno("Not valid value", "You have been entered a not valid value, do you want to enter a new value (yes) or exit (no)?")
+                if answer:
+                    cloud_id = simpledialog.askstring("Configure credentials", "Enter the cloud Id:")
+                else:
+                    exit()
+            envFile.write("cloud_id=" + cloud_id + "\n")
+            user = simpledialog.askstring("Configure credentials", "Enter the user name in Kibana:")
+            while not user:
+                answer = askyesno("Not valid value", "You have been entered a not valid value, do you want to enter a new value (yes) or exit (no)?")
+                if answer:
+                    user = simpledialog.askstring("Configure credentials", "Enter the user name in Kibana:")
+                else:
+                    exit()
+            envFile.write("user=" + user + "\n")
+            password = simpledialog.askstring("Configure credentials", "Enter the password in Kibana:")
+            while not password:
+                answer = askyesno("Not valid value", "You have been entered a not valid value, do you want to enter a new value (yes) or exit (no)?")
+                if answer:
+                    password = simpledialog.askstring("Configure credentials", "Enter the password in Kibana:")
+                else:
+                    exit()
+            envFile.write("password=" + password + "\n")
+
+
+        if not 'IMS' in initial_content:
+            envFile.write("# IMS\n")
+            api_key = simpledialog.askstring("Configure credentials", "Enter the IMS secret token:")
+            while not api_key:
+                answer = askyesno("Not valid value", "You have been entered a not valid value, do you want to enter a new value (yes) or exit (no)?")
+                if answer:
+                    api_key = simpledialog.askstring("Configure credentials", "Enter the IMS secret token:")
+                else:
+                    exit()
+            envFile.write(f'API_KEY="{api_key}"\n')

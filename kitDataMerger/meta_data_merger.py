@@ -1,30 +1,25 @@
-import sys
 import os
 
-parent_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(parent_dir)
-
 import pandas as pd
-from tkinter import filedialog as fd
-from tkinter.messagebox import askokcancel, INFO
 import re
 import shutil
+import logging
 
-def merge_meta_data(meta_file):
+logging.getLogger("kitDataMerger")
+
+def merge_meta_data():
     # Open and read the provided metadata file
-    # df_meta = pd.read_csv(meta_file, usecols=['Kit ID', 'Date', 'Location', 'Coordination', 'Location Picture', 'Treatment', 'Plant Picture', 'Temperature', 'School', 'Scientific Plant Name', 'Hebrew Plant Name'])
-    df_meta = pd.read_csv(meta_file, usecols=['Kit ID', 'Date', 'Location', 'Coordination', 'Location Picture', 'Treatment', 'Plant Picture', 'Temperature', 'School', 'Scientific Plant Name', 'Hebrew Plant Name'])
-
+    df_meta = pd.read_csv(f"./kitDataMerger/meteorology/meta_data_final.csv", encoding="utf-16", usecols=['Kit ID', 'Date', 'Location', 'Coordination', 'Location Picture', 'Treatment', 'Plant Picture', 'Temperature', 'School', 'Scientific Plant Name', 'Hebrew Plant Name', 'TD', 'TDmin', 'TDmax', 'TG', 'WSmax', 'WDmax', 'WS', 'WD', 'STDwd', 'Grad', 'NIP', 'DiffR', 'RH', 'Rain'])
     # Create or clear a destination directory
-    if os.path.exists(f"{parent_dir}/Fungi_meta_data"):
-        shutil.rmtree(f"{parent_dir}/Fungi_meta_data")
-    os.makedirs(f"{parent_dir}/Fungi_meta_data")
+    if os.path.exists(f"./kitDataMerger/Fungi_meta_data"):
+        shutil.rmtree(f"./kitDataMerger/Fungi_meta_data")
+    os.makedirs(f"./kitDataMerger/Fungi_meta_data")
     
     # Iterate through the merged asv data
-    for file in os.listdir(f"{parent_dir}/merged_asv_data"):
+    for file in os.listdir(f"./kitDataMerger/merged_asv_data"):
 
         # Load the kit file into a dict
-        df_kit = pd.read_csv(f"{parent_dir}/merged_asv_data/{file}")
+        df_kit = pd.read_csv(f"./kitDataMerger/merged_asv_data/{file}")
         df_kit_dict = df_kit.to_dict()
 
         # Extract the kit id from the filename
@@ -44,7 +39,17 @@ def merge_meta_data(meta_file):
                     continue
 
         df = pd.DataFrame.from_dict(df_kit_dict)
+        if len(df.columns) != 37:
+            logging.error(f"Not enough columns in kit ID {id}: {len(df.columns)}\nThe columns are: {df.columns}")
 
-        df.to_csv(f"{parent_dir}/Fungi_meta_data/{file}", index=False)
+        try:
+            df.to_csv(
+                f"./kitDataMerger/Fungi_meta_data/{file}",
+                index=False, 
+                encoding="utf-16",
+                sep="\t"
+            )
+        except Exception as e:
+            print(e)
 
 

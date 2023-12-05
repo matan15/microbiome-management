@@ -5,7 +5,12 @@ This project is designed to merge sample data from different plant areas (root, 
 
 The samples are part of a microbiome research program, and the files are merged by sample kits.
 
-## Setup the project
+## Installation
+Download the latest release of the project, install it, and run the program.
+
+If you running the program for the first time, you will be prompted for credentials.
+
+## Setup the project for development
 
 ### Clone the project
 
@@ -26,16 +31,9 @@ The samples are part of a microbiome research program, and the files are merged 
 ```
 
 ### Install requirements
-
 ```bash
   pip install -r requirements.txt
 ```
-
-### Set the configuration file
-```bash
-  python set_config.py
-```
-Answer the questions that you will be asked.
 
 ### Run the project
 ```bash
@@ -48,6 +46,7 @@ To prevent critical errors, please make sure your meta-data file is formatted co
 2. Coordinates are seperated by a comma only, without any spaces: lat,lon (e.g. 38.897957,-77.036560).
 3. The following columns MUST be included: Kit ID, Date, Location, Coordination, Location Picture, Treatment, Plant Picture, Temperature, School, Scientific Plant Name, Hebrew Plant Name.
 4. Avoid whitespaces anywhere in the file.
+5. All the dates should be in American format.
 
 ## User Instructions
 
@@ -56,9 +55,9 @@ To prevent critical errors, please make sure your meta-data file is formatted co
 The window of the program built from 3 inputs:
 1. In the first input field, you can choose the data folder by typing the path of the folder in the first input, or by clicking the button "Browse" that will open the file explorer.
 2. In the second input field, you can choose the meta data file that will be merged into the data files. Type the path to the file in the second input or click the "Browse" button to choose the file with file explorer.
-3. Optional: you can check the check box that is on the bottom of the window in order to upload the files to Open-Search.
+3. Optional: you can check the check box that is on the bottom of the window in order to upload the files to Kibana.
 
-When you filled all the fields, you can click the "Submit" button. After the program finishes the process the files will be saved in the folder that you choose in the file explorer (and will upload the data to Open-Search, if you choose the check box).
+When you filled all the fields, you can click the "Submit" button. After the program finishes the process the files will be saved in the folder that you choose in the file explorer (and will upload the data to Kibana, if you choose the check box).
 
 ## Documantation
 
