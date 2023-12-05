@@ -1,4 +1,4 @@
-from cx_Freeze import setup, Executable
+from cx_Freeze import Executable, setup
 import sys
 
 base = "Win32GUI" if sys.platform == "win32" else None
