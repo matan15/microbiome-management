@@ -1,14 +1,15 @@
 
-# Sample Kit Data Merger 
+# Microbiome Kibana Management
 
-This project is designed to merge sample data from different plant areas (root, flower, fruit, and soil).
-
-The samples are part of a microbiome research program, and the files are merged by sample kits.
+This project is designed to manage the microbiome-kibana integration. It has 7 tools to integrate with Kibana.
 
 ## Installation
 Download the latest release of the project, install it, and run the program.
 
 If you running the program for the first time, you will be prompted for credentials.
+
+## Updating the program
+First, remove the program from your PC, then, download and install the latest version from the GitHub releases.
 
 ## Setup the project for development
 
@@ -42,33 +43,32 @@ If you running the program for the first time, you will be prompted for credenti
 
 ## IMPORTANT: Meta-Data File Structure
 To prevent critical errors, please make sure your meta-data file is formatted correctly:
-1. Each word in a column's name/title is capitalised ("This Is An Example For A Column Name")
-2. Coordinates are seperated by a comma only, without any spaces: lat,lon (e.g. 38.897957,-77.036560).
+1. Each word in a column's name/title is capitalized ("This Is An Example For A Column Name")
+2. Coordinates are separated by a comma only, without any spaces: lat,lon (e.g. 38.897957,-77.036560).
 3. The following columns MUST be included: Kit ID, Date, Location, Coordination, Location Picture, Treatment, Plant Picture, Temperature, School, Scientific Plant Name, Hebrew Plant Name.
 4. Avoid whitespaces anywhere in the file.
 5. All the dates should be in American format.
 
 ## User Instructions
 
-![screenshot](/static/images/screenshot.png)
+If you are running the program for the first time, once you run the program, it will show an error because it couldn't find the credentials. Once you click ok, it will ask you to do the setup process, please answer all the questions.
 
-The window of the program built from 3 inputs:
-1. In the first input field, you can choose the data folder by typing the path of the folder in the first input, or by clicking the button "Browse" that will open the file explorer.
-2. In the second input field, you can choose the meta data file that will be merged into the data files. Type the path to the file in the second input or click the "Browse" button to choose the file with file explorer.
-3. Optional: you can check the check box that is on the bottom of the window in order to upload the files to Kibana.
+The user window is divided to 7 tools, which allows to the user do 7 actions with the program.
 
-When you filled all the fields, you can click the "Submit" button. After the program finishes the process the files will be saved in the folder that you choose in the file explorer (and will upload the data to Kibana, if you choose the check box).
+![screenshot](/static/images/screenshot.png "screenshot")
 
-## Documantation
+You can switch between actions in the toolbar at the top of the window.
 
-The program consists of 4 Python scripts:
-1. data_filter - Receives a path for the raw directory. Filters the raw data by deleting redundant files (mismatching the "S[number][any other text]" filename format).
-2. file_merger - Iterates through the filtered raw data files and merges them into sorted files (files called "s_{Kit ID}_fungi", containing all fungi in the specific kit). The merged and sorted files are saved in a temporary directory within the scripts' directory.
-3. meta_data_merger - Receives a path for a meta data file, reads the file and adds relevant info to the merged files.
-4. main - TODO
+1. "Documentation": The documentation about the project, you can read it to know how to use the program.
+2. "Upload Samples": A tool to upload samples to Kibana. In the first field, you select the data folder using the "Browse" button (inside the folder the data should be divided into sequences, in each sequence there must be an "ASV" folder). In the second field, you select the metadata file (A CSV file, check the section "IMPORTANT: Meta-Data File Structure"). If you want to upload the data to kibana, check the checkbox "Upload to Kibana". The program will merge files and upload the data to Kibana. At the end, the program will save the data that has been uploaded to Kibana in any location you choose at the end of the running of the program
+3. "Delete kit": At the field, you need to enter a kit ID (it must be a number). The program will delete the kit from Kibana.
+4. "Delete All Data": the program will delete all the data from Kibana.
+5. "Get all the data": In the field, you should choose a location where to save the data using the "Browse" button. Once you click submit, the program will download all the data to kibana_data.csv in the location you chose.
+6. "Get Kit": In the first field, you should write the kit ID you want to get (the kit ID must be a number). In the second field, you should select the location where to save the data using the "Browse" button. Once you click Submit, the program will save the data in the location you provided in the file kibana_data.csv.
+6. "Update Credentials": if there are credentials that you need to change, you can change them in the "Update Credentials" tool.
 
 ## Issues & Questions
-If you have any issue with the program, contact us:
+If you have any issues with the program or questions, contact us:
 
 Matan: matan.naydis@gmail.com
 Tomer: tomer.bolt@gmail.com

@@ -1,9 +1,11 @@
 from cx_Freeze import Executable, setup
 import sys
 
+# Set the base platform for the executable
 base = "Win32GUI" if sys.platform == "win32" else None
 
-executables = [Executable("main.py", base=base, icon="static//icons/plant.ico", target_name="kit Data Merger")]
+# Define the list of executables to be created
+executables = [Executable("main.py", base=base, icon="./static/icons/plant.ico", target_name="kit Data Merger")]
 
 includefiles = [
     "set_config.py", 
@@ -11,9 +13,11 @@ includefiles = [
     "static",
     "logs",
     "kitDataMerger",
-    "GCS"
+    "GCS",
+    "pages"
 ]
 
+# Define the list of packages required for the executable
 packages = [
     "os",
     "sys",
@@ -31,9 +35,13 @@ packages = [
     "geopy",
     "time",
     "typing",
-    "elasticsearch"
+    "elasticsearch",
+    "csv",
+    "tkhtmlview",
+    "markdown"
 ]
 
+# Set the options for the build
 options = {
     "build_exe": {
         "packages": packages,
@@ -41,9 +49,10 @@ options = {
     }
 }
 
+# Define the setup configuration
 setup(
     name="kit Data Merger",
-    version="2.0",
+    version="2.1",
     options=options,
     executables=executables,
     author="Matan Naydis and Tomer Kimchi",

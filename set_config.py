@@ -2,6 +2,18 @@ from tkinter import simpledialog
 from tkinter.messagebox import askyesno
 
 def get_config():
+    """
+    Configure and generate the necessary environment variables for Elasticsearch and IMS API.
+
+    This function prompts the user to enter required credentials such as cloud_id, user, password for Elasticsearch,
+    and API_KEY for IMS API. It creates or updates the '.env' file with the provided values.
+
+    If the '.env' file already contains valid credentials for both Elasticsearch and IMS API, the function does not
+    prompt the user and exits.
+
+    Returns:
+        None
+    """
     with open(".env", 'w') as envFile:
         envFile.write("")
 
@@ -9,7 +21,7 @@ def get_config():
         initial_content = envFile.read()
 
     if "cloud_id" in initial_content and "user" in initial_content and "password" in initial_content and "API_KEY" in initial_content:
-        return
+        return False
 
     with open(".env", 'a') as envFile:
         if not 'ELASTIC' in initial_content:
@@ -20,7 +32,7 @@ def get_config():
                 if answer:
                     cloud_id = simpledialog.askstring("Configure credentials", "Enter the cloud Id:")
                 else:
-                    exit()
+                    return False
             envFile.write("cloud_id=" + cloud_id + "\n")
             user = simpledialog.askstring("Configure credentials", "Enter the user name in Kibana:")
             while not user:
@@ -28,7 +40,7 @@ def get_config():
                 if answer:
                     user = simpledialog.askstring("Configure credentials", "Enter the user name in Kibana:")
                 else:
-                    exit()
+                    return False
             envFile.write("user=" + user + "\n")
             password = simpledialog.askstring("Configure credentials", "Enter the password in Kibana:")
             while not password:
@@ -36,9 +48,8 @@ def get_config():
                 if answer:
                     password = simpledialog.askstring("Configure credentials", "Enter the password in Kibana:")
                 else:
-                    exit()
-            envFile.write("password=" + password + "\n")
-
+                    return False
+            envFile.write("password=" + password + "\n\n")
 
         if not 'IMS' in initial_content:
             envFile.write("# IMS\n")
@@ -48,5 +59,5 @@ def get_config():
                 if answer:
                     api_key = simpledialog.askstring("Configure credentials", "Enter the IMS secret token:")
                 else:
-                    exit()
+                    return False
             envFile.write(f'API_KEY="{api_key}"\n')

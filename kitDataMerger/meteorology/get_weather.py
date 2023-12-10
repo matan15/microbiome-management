@@ -14,18 +14,23 @@ import re
 import logging
 import dotenv
 
+# Load environment variables from a .env file
 headers = {'Authorization': os.environ.get("API_KEY")}
 
+# Set API key for authorization
 dotenv.load_dotenv(dotenv.find_dotenv())
 
 def distance(station, x, y):
     """
-    Args:
-        station (dict): A dictionary representing an IMS station, including its location (also a dictionary)
-        x (float): The latitude value of a specific point
-        y (float): The longitude value of a specific point
-    Return:
-        The geographic distance of a specific point from an IMS station (float).
+    Calculate the geodesic distance between a given station and coordinates (x, y).
+
+    Parameters:
+    - station: Dictionary containing station information with 'location' key.
+    - x: Latitude of the target coordinates.
+    - y: Longitude of the target coordinates.
+
+    Returns:
+    Geodesic distance in kilometers.
     """
     try:
         return geopy.distance.geodesic((x, y), (station['location']['latitude'], station['location']['longitude'])).km
@@ -35,10 +40,13 @@ def distance(station, x, y):
 
 def get_timezone(d: datetime):
     """
-    Args:
-        d (Datetime object): A specific date and time.
-    Return:
-        The timezone, based on daytime or summertime.
+    Get the timezone information for a given datetime object.
+
+    Parameters:
+    - d: Datetime object.
+
+    Returns:
+    Timezone information as a string.
     """
     israel = pytz.timezone('Israel').localize(d).strftime('%Y/%m/%d  %H:%M:%S %Z/%z').split('  ')
     return '+02:00' if 'IST' in israel[1] else '+03:00'
@@ -46,11 +54,14 @@ def get_timezone(d: datetime):
 
 def round_timestamp(d: datetime, tz: str):
     """
-    Args:
-        d (Datetime object): A specific date and time.
-        tz (str): Timezone of the country.
-    Return:
-        A timestamp, with the time rounded (str).
+    Round the timestamp of a given datetime object.
+
+    Parameters:
+    - d: Datetime object.
+    - tz: Timezone information.
+
+    Returns:
+    Rounded timestamp as a formatted string.
     """
     return f'{d.year}-{str(d.month).zfill(2)}-{str(d.day).zfill(2)}' \
            f'T{str(d.hour).zfill(2)}:{str(round(d.minute, 2)).zfill(2)}:00{tz}'
@@ -58,30 +69,37 @@ def round_timestamp(d: datetime, tz: str):
 
 def next_day(d: datetime):
     """
-    Args:
-        d (Datetime object): A specific date.
-    Return
-        The following day to the specific date (Datetime object).
+    Calculate the datetime for the next day.
+
+    Parameters:
+    - d: Datetime object.
+
+    Returns:
+    Datetime object for the next day.
     """
     return d + timedelta(days=1)
 
 
 def get_stations_json():
     """
-    Return:
-         A list containing all the data about current stations in a JSON format (list).
+    Retrieve JSON data containing information about stations.
+
+    Returns:
+    JSON data with station information.
     """
     return get_response_json(f"https://api.ims.gov.il/v1/envista/stations")
 
 
 def get_response_json(url, params=None):
     """
-    (Uses global headers)
-    Args:
-        url (str): A URL address to which the API request will be sent.
-        params (str): Additional params to send with the API request. Default extra parameters are set to None.
-    Return:
-         A JSON object containing the response (dict).
+    Make a GET request to the specified URL and retrieve JSON data.
+
+    Parameters:
+    - url: URL for the GET request.
+    - params: Optional parameters for the request.
+
+    Returns:
+    JSON data from the response.
     """
     response = req.get(url, params=params, headers=headers)
     response.raise_for_status()
@@ -90,21 +108,29 @@ def get_response_json(url, params=None):
 
 def parse_cord(d):
     """
-    Args:
-        d (str): Data contained in the 'coordination' column of a row, separated by a space or comma.
-    Return:
-        A list containing the two coordinates (list).
+    Parse a coordinate string into a list of float values.
+
+    Parameters:
+    - d: Coordinate string.
+
+    Returns:
+    List of float values representing coordinates.
     """
     return [float(c.strip(' ')) for c in d.split(',' if ',' in d else ' ')]
 
 
 def sort_samples(samples, progress_var: tk.DoubleVar, percentage_label: tk.Label, status_label: tk.Label):
     """
-    The function gets samples and groups them by station ID.
-    Args:
-        samples (list): A List of samples.
-    Return:
-        A list of the grouped samples (list).
+    Sort samples based on station distances.
+
+    Parameters:
+    - samples: List of samples with station information.
+    - progress_var: Tkinter variable for tracking progress.
+    - percentage_label: Tkinter label for displaying progress percentage.
+    - status_label: Tkinter label for displaying status messages.
+
+    Returns:
+    Dictionary with samples grouped by station ID.
     """
     status_label.config(text="Sorting Samples")
     number_of_samples = len(samples)
@@ -129,22 +155,26 @@ def sort_samples(samples, progress_var: tk.DoubleVar, percentage_label: tk.Label
 
 def is_valid_date(date_string):
     """
-    The function checks if a string is a valid date.
-    Args:
-        date_string (str): A date string.
-    Return:
-        True if the string is a valid date, False otherwise.
+    Check if a date string is in a valid format (MM/DD/YYYY).
+
+    Parameters:
+    - date_string: Date string.
+
+    Returns:
+    True if the date is in a valid format, False otherwise.
     """
     pattern = r"^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/(19|20)\d{2}$"
     return re.match(pattern, date_string) is not None
 
 def convert_american_date_to_normal(date: str):
     """
-    The function converts an American date to a normal date.
-    Args:
-        date (str): An American date.
-    Return:
-        A normal date (str).
+    Convert an American date format (MM/DD/YYYY) to a normal date format (DD/MM/YYYY).
+
+    Parameters:
+    - date: American date string.
+
+    Returns:
+    Date string in normal format.
     """
     date_split = date.split('/')
     return f'{date_split[1]}/{date_split[0]}/{date_split[2]}'
@@ -152,14 +182,18 @@ def convert_american_date_to_normal(date: str):
 
 def parse_table(df: pd.DataFrame, stations, radius, progress_var: tk.DoubleVar, percentage_label: tk.Label, status_label: tk.Label):
     """
-    The function converts a DataFrame into list of samples (list of dictionaries).
-    The function puts in every sample the nearest stations in the radius that the user have entered.
-    Args:
-        df (DataFrame): A table with the date.
-        stations (list): All the stations.
-        radius (float): A specific radius to look within for stations.
-    Return:
-         A list of samples, formatted (list).
+    Parse table data and extract relevant information.
+
+    Parameters:
+    - df: Pandas DataFrame containing table data.
+    - stations: List of environmental stations.
+    - radius: Maximum distance for station inclusion.
+    - progress_var: Tkinter variable for tracking progress.
+    - percentage_label: Tkinter label for displaying progress percentage.
+    - status_label: Tkinter label for displaying status messages.
+
+    Returns:
+    List of dictionaries representing parsed samples.
     """
     samples = []
     status_label.config(text="Parsing Table")
@@ -228,10 +262,17 @@ def parse_table(df: pd.DataFrame, stations, radius, progress_var: tk.DoubleVar, 
 
 def update_weather(filepath, radius, progress_var: tk.DoubleVar, percentage_label: tk.Label, status_label: tk.Label):
     """
-    The function gets a file path and a radius to look for stations and updating the file.
-    Args:
-        filepath (str): path of the file to update.
-        radius (float): radius to look for stations.
+    Update weather information for samples in a CSV file.
+
+    Parameters:
+    - filepath: Path to the CSV file containing samples.
+    - radius: Maximum distance for station inclusion.
+    - progress_var: Tkinter variable for tracking progress.
+    - percentage_label: Tkinter label for displaying progress percentage.
+    - status_label: Tkinter label for displaying status messages.
+
+    Returns:
+    None
     """
     stations = get_stations_json()
     df = pd.read_csv(filepath_or_buffer=filepath)

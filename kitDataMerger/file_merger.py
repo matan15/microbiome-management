@@ -6,7 +6,7 @@ import tkinter as tk
 
 import pandas as pd
 
-def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_label: tk.Label):
+def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_label: tk.Label, samples_type):
     # If the destination directory already exists, delete it
     if os.path.exists(f'./kitDataMerger/merged_asv_data'):
         shutil.rmtree(f'./kitDataMerger/merged_asv_data')
@@ -15,7 +15,7 @@ def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_la
     progress_counter = 0
 
     # Count how many files to be merged are there
-    num_files = sum([len(files) for root_dir, cur_dir, files in os.walk(f'./kitDataMerger/filtered_data')])
+    num_files = sum([1 for _ in os.listdir('./kitDataMerger/filtered_data')])
 
     # Set the progress bar text label
     status_label.config(text='Merging data...')
@@ -41,10 +41,10 @@ def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_la
     for filename in os.listdir(f'./kitDataMerger/filtered_data'):
 
         # Clean filename from extension and irrelevent info
-        clean_filename = filename.split('.')[0].split('_')[0]
+        clean_filename = filename.split('.')[0]
 
         # Use a RegEx pattern to split the clean filename into two groups - kit id and sample category (F, R, Fr, S)
-        match = re.search(r'S(\d+)([A-Za-z]+)', clean_filename)
+        match = re.search(r'^S(\d+)_(F|R|S|Fr|L)(.*)?$', clean_filename)
 
         # In case of a split error, count the file as "merged" and continue to the next one
         if not match:
@@ -64,8 +64,15 @@ def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_la
         # Iterate through the data and pour it into the merged data dictionary
         # (the data is stored by line numbers which are redundant in this case, so iterate values only)
         for v in df_dict.values():
-            mdata.setdefault(kit_id, {}).setdefault(v.get('id'), {'F': 0, 'R': 0, 'S': 0, 'Fr': 0})[
-                sample] = v.get('prob')
+            if samples_type == 'Fungi':
+                if v.get('id') == 'No_Taxonomy':
+                    continue
+                mdata.setdefault(kit_id, {}).setdefault(v.get('id'), {'F': 0, 'R': 0, 'S': 0, 'Fr': 0, 'L': 0})[sample] = v.get('prob')
+            elif samples_type == 'Bacteria':
+                if v.get('texon') == 'No_Taxonomy':
+                    continue
+                taxon = ' '.join(v.get('taxon').split(' ')[1:])
+                mdata.setdefault(kit_id, {}).setdefault(taxon, {'F': 0, 'R': 0, 'S': 0, 'Fr': 0, 'L': 0})[sample] = v.get(clean_filename)
 
         # Count the file as "merged", calculate and update the progress
         progress_counter += 1
@@ -80,7 +87,7 @@ def _sum_prob(d):
     '''
     Sums the prob values of each
     '''
-    ret = {'F': 0, 'R': 0, 'S': 0, 'Fr': 0}
+    ret = {'F': 0, 'R': 0, 'S': 0, 'Fr': 0, 'L': 0}
     for id, probs in d.items():
         for sample in ret.keys():
             ret[sample] += probs[sample]
@@ -93,9 +100,9 @@ def _save_to_csv(mdata):
         m_files_counter += 1
         prob_sum = _sum_prob(d)
         formatted_data = {'kit_id': [], 'Kingdom': [], 'Philum': [], 'Class': [], 'Order': [], 'Family': [], 'Genus': [],
-            'Species': [], 'F': [], 'R': [], 'S': [], 'Fr': []}
+            'Species': [], 'F': [], 'R': [], 'S': [], 'Fr': [], 'L': []}
 
-        samples = ['F', 'R', 'S', 'Fr']
+        samples = ['F', 'R', 'S', 'Fr', 'L']
 
         for id, probs in d.items():
             # Split the id column to column code and the data
