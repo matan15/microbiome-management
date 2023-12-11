@@ -4,12 +4,14 @@
 This project is designed to manage the microbiome-kibana integration. It has 7 tools to integrate with Kibana.
 
 ## Installation
-Download the latest release of the project, install it, and run the program.
+Download the latest release of the project, extract the files and run the main.exe file.
+
+IMPORTANT: Don't move/delete any files from the folders. moving/deleting files can crash the program.
 
 If you running the program for the first time, you will be prompted for credentials.
 
 ## Updating the program
-First, remove the program from your PC, then, download and install the latest version from the GitHub releases.
+First, remove the program from your PC, then, download the latest version from the GitHub releases.
 
 ## Setup the project for development
 
@@ -60,7 +62,7 @@ The user window is divided to 7 tools, which allows to the user do 7 actions wit
 You can switch between actions in the toolbar at the top of the window.
 
 1. "Documentation": The documentation about the project, you can read it to know how to use the program.
-2. "Upload Samples": A tool to upload samples to Kibana. In the first field, you select the data folder using the "Browse" button (inside the folder the data should be divided into sequences, in each sequence there must be an "ASV" folder). In the second field, you select the metadata file (A CSV file, check the section "IMPORTANT: Meta-Data File Structure"). If you want to upload the data to kibana, check the checkbox "Upload to Kibana". The program will merge files and upload the data to Kibana. At the end, the program will save the data that has been uploaded to Kibana in any location you choose at the end of the running of the program
+2. "Upload Samples": A tool to upload samples to Kibana. In the first field, you select the data folder using the "Browse" button (inside the folder the data should be divided into sequences, in each sequence there must be an "ASV" folder). In the second field, you select the metadata file (A CSV file, check the section "IMPORTANT: Meta-Data File Structure"). If you want to upload the data to Kibana, check the checkbox "Upload to Kibana". The program will merge files and upload the data to Kibana. At the end, the program will save the data that has been uploaded to Kibana in any location you choose at the end of the running of the program
 3. "Delete kit": At the field, you need to enter a kit ID (it must be a number). The program will delete the kit from Kibana.
 4. "Delete All Data": the program will delete all the data from Kibana.
 5. "Get all the data": In the field, you should choose a location where to save the data using the "Browse" button. Once you click submit, the program will download all the data to kibana_data.csv in the location you chose.
