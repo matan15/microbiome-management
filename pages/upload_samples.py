@@ -46,7 +46,10 @@ def perform_actions(notebook):
         return
 
     # Disable the "Browse" and "Submit" buttons
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.DISABLED)
+    for i in range(0, 7):
+        if i == 1:
+            continue
+        notebook.tab(i, state=tk.DISABLED)
     submit_button.config(state=tk.DISABLED)
     select_dir_button.config(state=tk.DISABLED)
     select_meta_button.config(state=tk.DISABLED)
@@ -122,7 +125,10 @@ def perform_actions(notebook):
     dir_entry.config(state=tk.NORMAL)
     meta_entry.config(state=tk.NORMAL)
     generate_check.config(state=tk.NORMAL)
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.NORMAL)
+    for i in range(0, 7):
+        if i == 1:
+            continue
+        notebook.tab(i, state=tk.NORMAL)
 
 
 def start_processing(notebook):

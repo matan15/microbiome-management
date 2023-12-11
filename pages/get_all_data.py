@@ -73,7 +73,10 @@ def get_data(notebook):
         return
 
     # Step 3: Disable certain Tkinter widgets
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.DISABLED)
+    for i in range(0, 7):
+        if i == 4:
+            continue
+        notebook.tab(i, state=tk.DISABLED)
     location_entry.config(state=tk.DISABLED)
     select_dir_button.config(state=tk.DISABLED)
     submit_button.config(state=tk.DISABLED)
@@ -100,6 +103,10 @@ def get_data(notebook):
     # Step 7: Display error if no records found, re-enable disabled Tkinter widgets
     if res['hits']['total']['value'] == 0:
         showerror("No records found", "There are no records found.")
+        for i in range(0, 7):
+            if i == 4:
+                continue
+            notebook.tab(i, state=tk.NORMAL)
         status_label.config(text="")
         logging.info("No records found in Elasticsearch.")
         location_entry.config(state=tk.NORMAL)
@@ -149,7 +156,10 @@ def get_data(notebook):
     logging.info(f"The file was saved successfully in {selected_dir}")
 
     # Step 15: Re-enable Tkinter widgets for future operations
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.NORMAL)
+    for i in range(0, 7):
+        if i == 4:
+            continue
+        notebook.tab(i, state=tk.NORMAL)
     location_entry.config(state=tk.NORMAL)
     select_dir_button.config(state=tk.NORMAL)
     submit_button.config(state=tk.NORMAL)

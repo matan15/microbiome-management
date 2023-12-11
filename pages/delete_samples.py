@@ -58,7 +58,10 @@ def delete_samples(notebook):
     )
 
     # Step 5: Disable certain Tkinter widgets
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.DISABLED)
+    for i in range(0, 7):
+        if i == 2:
+            continue
+        notebook.tab(i, state=tk.DISABLED)
     kit_number_entry.config(state=tk.DISABLED)
     submit_button.config(state=tk.DISABLED)
 
@@ -91,7 +94,10 @@ def delete_samples(notebook):
     # Step 12: Re-enable Tkinter widgets for future operations
     kit_number_entry.config(state=tk.NORMAL)
     submit_button.config(state=tk.NORMAL)
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.NORMAL)
+    for i in range(0, 7):
+        if i == 2:
+            continue
+        notebook.tab(i, state=tk.NORMAL)
 
 
 def start_processing(notebook):

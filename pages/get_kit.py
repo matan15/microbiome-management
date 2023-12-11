@@ -75,7 +75,10 @@ def get_kit(notebook):
     )
 
     # Step 4: Disable certain Tkinter widgets
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.DISABLED)
+    for i in range(0, 7):
+        if i == 5:
+            continue
+        notebook.tab(i, state=tk.DISABLED)
     kit_number_entry.config(state=tk.DISABLED)
     submit_button.config(state=tk.DISABLED)
 
@@ -97,6 +100,10 @@ def get_kit(notebook):
         location_entry.config(state=tk.NORMAL)
         select_dir_button.config(state=tk.NORMAL)
         submit_button.config(state=tk.NORMAL)
+        for i in range(0, 7):
+            if i == 4:
+                continue
+            notebook.tab(i, state=tk.NORMAL)
         return
     
     # Step 7: Retrieve data from search results and update progress bar
@@ -135,7 +142,10 @@ def get_kit(notebook):
     logging.info(f"The file was saved successfullt in {selected_dir}")
 
     # Step 12: Re-enable Tkinter widgets
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.NORMAL)
+    for i in range(0, 7):
+        if i == 5:
+            continue
+        notebook.tab(i, state=tk.NORMAL)
     location_entry.config(state=tk.NORMAL)
     select_dir_button.config(state=tk.NORMAL)
     submit_button.config(state=tk.NORMAL)

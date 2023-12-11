@@ -26,7 +26,10 @@ def update_credentials(notebook):
     Returns:
         None
     """
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.DISABLED)
+    for i in range(0, 7):
+        if i == 6:
+            continue
+        notebook.tab(i, state=tk.DISABLED)
     if not cloud_id_entry.get() or not user_entry.get() or not password_entry.get() or not api_key_entry.get():
         showerror("Error in credentials", "One or more values are not valid.")
         logging.error("Error in credentials: One or more values are not valid.")
@@ -44,7 +47,10 @@ API_KEY={api_key_entry.get()}
 """)
     showinfo("Credentials updated", "The credentials has been updated successfully.")
     logging.info("The credentials has been updated successfully.")
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.NORMAL)
+    for i in range(0, 7):
+        if i == 6:
+            continue
+        notebook.tab(i, state=tk.NORMAL)
 
 
 def start_processing(notebook):

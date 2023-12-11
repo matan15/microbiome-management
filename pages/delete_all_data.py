@@ -39,7 +39,8 @@ def delete_data(notebook):
         return 
 
     # Step 2: Disable submit button
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.DISABLED)
+    for i in range(0, 7):
+        notebook.tab(i, state=tk.DISABLED)
     submit_button.config(state=tk.DISABLED)
 
     # Step 3: Update status label
@@ -67,7 +68,10 @@ def delete_data(notebook):
 
     # Step 8: Re-enable submit button
     submit_button.config(state=tk.NORMAL)
-    notebook.config([0, 1, 2, 3, 4, 5, 6], state=tk.NORMAL)
+    for i in range(0, 7):
+        if i == 3:
+            continue
+        notebook.tab(i, state=tk.NORMAL)
 
 
 def start_processing(notebook):
