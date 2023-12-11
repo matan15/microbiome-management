@@ -78,8 +78,8 @@ def delete_samples(notebook):
     }
 
     # Step 8: Add optional kingdom type to the delete_by_query request
-    if selected_type != "All":
-        body_request["Kingdom"] = selected_type
+    if selected_type.get() != "All":
+        body_request["Kingdom"] = selected_type.get()
 
     # Step 9: Execute delete_by_query operation on the index in Elasticsearch
     es.delete_by_query(index='microbiome', body=body_request)

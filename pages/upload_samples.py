@@ -42,6 +42,7 @@ def perform_actions(notebook):
     # Get the value of the field (the path)
     selected_dir = dir_entry.get()
     selected_meta = meta_entry.get()
+    upload_type = selected_type.get()
     if not selected_dir or not selected_meta:
         return
 
@@ -58,14 +59,14 @@ def perform_actions(notebook):
     generate_check.config(state=tk.DISABLED)
 
     # Call the filter and merge functions
-    if filter(selected_dir, progress_var, percentage_label, status_label, selected_type):
+    if filter(selected_dir, progress_var, percentage_label, status_label, upload_type):
 
         # Initializing the progress bar
         percentage_label.config(text='0%')
         status_label.config(text='Working...')
 
         # Merge files
-        num_files = merge_data(progress_var, percentage_label, status_label, selected_type)
+        num_files = merge_data(progress_var, percentage_label, status_label, upload_type)
 
         status_label.config(text="Getting weather:")
         update_weather(selected_meta, 32, progress_var, percentage_label, status_sub_label)
