@@ -6,6 +6,7 @@ import pytz
 import pandas as pd
 from requests.exceptions import ConnectionError
 import tkinter as tk
+from tkinter.messagebox import showerror
 import numpy as np
 import geopy.distance
 import time
@@ -274,7 +275,13 @@ def update_weather(filepath, radius, progress_var: tk.DoubleVar, percentage_labe
     Returns:
     None
     """
-    stations = get_stations_json()
+    try:
+        stations = get_stations_json()
+    except req.exceptions.SSLError:
+        status_label.config(text='There was an error with SSL.')
+        showerror("SSL error", "There is an error with SSL.")
+        return False
+        
     df = pd.read_csv(filepath_or_buffer=filepath)
     if 'TD' not in df.columns and 'TDmin' not in df.columns and 'TDmax' not in df.columns and 'TG' not in df.columns and\
         'WSmax' not in df.columns and 'WDmax' not in df.columns and 'WS' not in df.columns and 'WD' not in df.columns \
@@ -383,3 +390,5 @@ def update_weather(filepath, radius, progress_var: tk.DoubleVar, percentage_labe
     df.to_csv(f"./kitDataMerger/meteorology/meta_data_final.csv", index=False, encoding="utf-16")
     logging.info(f"The file was saved in the same directory of the original file as \"meta_data_final.csv\"")
     status_label.config(text="")
+
+    return True

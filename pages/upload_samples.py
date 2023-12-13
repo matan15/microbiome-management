@@ -69,7 +69,9 @@ def perform_actions(notebook):
         num_files = merge_data(progress_var, percentage_label, status_label, upload_type)
 
         status_label.config(text="Getting weather:")
-        update_weather(selected_meta, 32, progress_var, percentage_label, status_sub_label)
+        if not update_weather(selected_meta, 32, progress_var, percentage_label, status_sub_label):
+            shutil.rmtree("./kitDataMerger/merged_asv_data")
+            return
 
         merge_meta_data()
 

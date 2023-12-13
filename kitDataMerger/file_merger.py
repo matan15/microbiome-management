@@ -30,25 +30,32 @@ def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_la
     #           'F': f_prob,
     #           'R': r_prob,
     #           'Fr': fr_prob,
-    #           'S': s_prob
+    #           'S': s_prob,
+    #           'L': l_prob
     #       }
     #   }
     # }
 
     mdata = {}
+    counter_files = 0
 
     # Iterate through all the filtered files
     for filename in os.listdir(f'./kitDataMerger/filtered_data'):
 
+        counter_files += 1
+
         # Clean filename from extension and irrelevent info
         clean_filename = filename.split('.')[0]
 
-        # Use a RegEx pattern to split the clean filename into two groups - kit id and sample category (F, R, Fr, S)
-        match = re.search(r'^S(\d+)_(F|R|S|Fr|L)(.*)?$', clean_filename)
+        # Use a RegEx pattern to split the clean filename into two groups - kit id and sample category (F, R, Fr, S, L)
+        match = re.search(r'^S(\d+)_(Fr|R|S|F|L)(.*)', clean_filename)
 
         # In case of a split error, count the file as "merged" and continue to the next one
         if not match:
             progress_counter += 1
+            progress = (progress_counter / num_files) * 100
+            progress_var.set(progress)
+            percentage_label.config(text=(('%.2f ' % progress) + '%'))
             continue
 
         kit_id = match.group(1)

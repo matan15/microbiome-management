@@ -61,6 +61,7 @@ def _save_docs(progress_var, percentage_label, num_files, index_name):
             rec['count_R'] = int(rec['R'] > 0)
             rec['count_S'] = int(rec['S'] > 0)
             rec['count_Fr'] = int(rec['Fr'] > 0)
+            rec['count_L'] = int(rec['L'] > 0)
             try:
                 cords = _parse_cords(rec['Coordination'])
                 if cords:
@@ -128,6 +129,9 @@ def fetch_and_index_data(progress_var, percentage_label, status_label, num_files
                     "type": "double"
                 },
                 "Fr": {
+                    "type": "double"
+                },
+                "L": {
                     "type": "double"
                 }
             }

@@ -28,7 +28,7 @@ def filter(data_dir: str, progress_var: tk.DoubleVar, percentage_label: tk.Label
                 for filename in os.listdir(f'{data_dir}/{dirname}/ASV'):
 
                     # If the filename matches the pattern (S[number][any other text]), copy it to the filtered data directory
-                    if re.match(r'S\d+', filename):
+                    if re.match(r'^S(\d+)_(Fr|R|S|F|L)(.*)', filename):
                         with open(f'./kitDataMerger/filtered_data/{filename}', 'w') as f:
                             shutil.copy2(f'{data_dir}/{dirname}/ASV/{filename}', f'./kitDataMerger/filtered_data/{filename.upper() if not "Fr" in filename else filename}')
 
@@ -44,7 +44,7 @@ def filter(data_dir: str, progress_var: tk.DoubleVar, percentage_label: tk.Label
                 return False  # As an error
     elif sample_type == "Bacteria":
         for filename in os.listdir(data_dir):
-            if re.match(r'^S\d+_(F|R|S|Fr|L)(.*)?$', filename):
+            if re.match(r'^S(\d+)_(Fr|R|S|F|L)*', filename):
                 with open(f'./kitDataMerger/filtered_data/{filename}', 'w') as f:
                     shutil.copy2(f'{data_dir}/{filename}', f'./kitDataMerger/{filename.upper() if not "Fr" in filename else filename}')
 
