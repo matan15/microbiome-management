@@ -6,6 +6,8 @@ import tkinter as tk
 
 import pandas as pd
 
+from pprint import pprint
+
 def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_label: tk.Label, samples_type):
     # If the destination directory already exists, delete it
     if os.path.exists(f'./kitDataMerger/merged_asv_data'):
@@ -76,7 +78,7 @@ def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_la
                     continue
                 mdata.setdefault(kit_id, {}).setdefault(v.get('id'), {'F': 0, 'R': 0, 'S': 0, 'Fr': 0, 'L': 0})[sample] = v.get('prob')
             elif samples_type == 'Bacteria':
-                if v.get('texon') == 'No_Taxonomy':
+                if v.get('taxon') == 'No_Taxonomy':
                     continue
                 taxon = ' '.join(v.get('taxon').split(' ')[1:])
                 mdata.setdefault(kit_id, {}).setdefault(taxon, {'F': 0, 'R': 0, 'S': 0, 'Fr': 0, 'L': 0})[sample] = v.get(clean_filename)
@@ -88,7 +90,7 @@ def merge_data(progress_var: tk.DoubleVar, percentage_label: tk.Label, status_la
         percentage_label.config(text=(('%.2f ' % progress) + '%'))
 
     shutil.rmtree(f'./kitDataMerger/filtered_data')
-    return _save_to_csv(mdata)
+    return _save_to_csv(mdata, samples_type)
 
 def _sum_prob(d):
     '''
@@ -101,7 +103,7 @@ def _sum_prob(d):
     return ret
 
 
-def _save_to_csv(mdata):
+def _save_to_csv(mdata, samples_type):
     m_files_counter = 0
     for kit, d in mdata.items():
         m_files_counter += 1
@@ -114,22 +116,62 @@ def _save_to_csv(mdata):
         for id, probs in d.items():
             # Split the id column to column code and the data
             id = id.split(';')
-            id = [s.split('__') for s in id]
+            if samples_type == "Fungi":
+                id = [s.split('__') for s in id]
 
-            # Add the data to a dict
-            formatted_data['kit_id'].append(kit)
-            formatted_data['Kingdom'].append(id[0][1].replace('_', ' ') if id[0][1] != '' else '__')
-            formatted_data['Philum'].append(id[1][1].replace('_', ' ') if id[1][1] != '' else '__')
-            formatted_data['Class'].append(id[2][1].replace('_', ' ') if id[2][1] != '' else '__')
-            formatted_data['Order'].append(id[3][1].replace('_', ' ') if id[3][1] != '' else '__')
-            formatted_data['Family'].append(id[4][1].replace('_', ' ') if id[4][1] != '' else '__')
-            formatted_data['Genus'].append(id[5][1].replace('_', ' ') if id[5][1] != '' else '__')
-            formatted_data['Species'].append(id[6][1].replace('_', ' ') if id[6][1] != '' else '__')
+                # Add the data to a dict
+                formatted_data['kit_id'].append(kit)
+                formatted_data['Kingdom'].append(id[0][1].replace('_', ' ') if id[0][1] != '' else '__')
+                formatted_data['Philum'].append(id[1][1].replace('_', ' ') if id[1][1] != '' else '__')
+                formatted_data['Class'].append(id[2][1].replace('_', ' ') if id[2][1] != '' else '__')
+                formatted_data['Order'].append(id[3][1].replace('_', ' ') if id[3][1] != '' else '__')
+                formatted_data['Family'].append(id[4][1].replace('_', ' ') if id[4][1] != '' else '__')
+                formatted_data['Genus'].append(id[5][1].replace('_', ' ') if id[5][1] != '' else '__')
+                formatted_data['Species'].append(id[6][1].replace('_', ' ') if id[6][1] != '' else '__')
+            
+            elif samples_type == "Bacteria":
+                formatted_data['kit_id'].append(kit)
+                try:
+                    formatted_data['Kingdom'].append(id[0].replace('_', ' ') if id[0] != '' else '__')
+                except IndexError:
+                    formatted_data.append('__')
+                
+                try:
+                    formatted_data['Philum'].append(id[1].replace('_', ' ') if id[1] != '' else '__')
+                except IndexError:
+                    formatted_data['Philum'].append('__')
+                
+                try:
+                    formatted_data['Class'].append(id[2].replace('_', ' ') if id[2] != '' else '__')
+                except IndexError:
+                    formatted_data['Class'].append('__')
+
+                try:
+                    formatted_data['Order'].append(id[3].replace('_', ' ') if id[3] != '' else '__')
+                except IndexError:
+                    formatted_data['Order'].append('__')
+
+                try:
+                    formatted_data['Family'].append(id[4].replace('_', ' ') if id[4] != '' else '__')
+                except IndexError:
+                    formatted_data['Family'].append('__')
+
+                try:
+                    formatted_data['Genus'].append(id[5].replace('_', ' ') if id[4] != '' else '__')
+                except IndexError:
+                    formatted_data['Genus'].append('__')
+
+                try:
+                    formatted_data['Species'].append(id[6].replace('_', ' ') if id[6] != '' else '__')
+                except IndexError:
+                    formatted_data['Species'].append('__')
+            
             for sample in samples:
                 try:
                     formatted_data[sample].append(float(probs[sample] / prob_sum[sample]))
                 except ZeroDivisionError:
                     formatted_data[sample].append(0)
+                
 
 
         # Convert the dict to a CSV file

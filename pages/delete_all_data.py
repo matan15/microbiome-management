@@ -40,6 +40,8 @@ def delete_data(notebook):
 
     # Step 2: Disable submit button
     for i in range(0, 7):
+        if i == 3:
+            continue
         notebook.tab(i, state=tk.DISABLED)
     submit_button.config(state=tk.DISABLED)
 
