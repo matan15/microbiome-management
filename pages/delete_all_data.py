@@ -15,6 +15,7 @@ dotenv.load_dotenv(dotenv.find_dotenv())
 
 submit_button = None
 status_label = None
+selected_type = None
 
 def delete_data(notebook):
     """
@@ -54,12 +55,24 @@ def delete_data(notebook):
         http_auth=(os.environ.get("user"), os.environ.get("password"))
     )
 
-    # Step 5: Delete all data from the index
-    es.delete_by_query(index="microbiome", body={
+    body_request = {
         "query": {
-            "match_all": {}
+            "match_all": {},
+            "match": {
+                'Kingdom': ''
+            }
         }
-    })
+    }
+    
+    if selected_type.get() == "All":
+        body_request["query"]["match_all"] = {}
+        del body_request['query']['match']
+    else:
+        body_request["query"]["match"]["Kingdom"] = selected_type.get()
+        del body_request['query']['match_all']
+
+    # Step 5: Delete all data from the index
+    es.delete_by_query(index="microbiome", body=body_request)
 
     # Step 6: Update status label and display success message
     status_label.config(text="The data has been deleted successfully.")
@@ -102,7 +115,7 @@ def delete_all_data_gui(root, notebook):
     Returns:
         None
     """
-    global submit_button, status_label
+    global submit_button, status_label, selected_type
 
     # Create the title label for the GUI
     title_label = ttk.Label(root, text='Delete All the data', font=('Helvetica', 16, 'bold'), background="#dcdad5")
@@ -111,6 +124,11 @@ def delete_all_data_gui(root, notebook):
     # Create the warning label for the GUI
     warning_label = ttk.Label(root, text="WARNING: All the data will be deleted", font=('Helvetica', 14, 'bold'), foreground="red", background="#dcdad5")
     warning_label.pack(pady=10)
+
+    selected_type = tk.StringVar()
+    selected_type.set("Fungi")
+    type_dropdown = ttk.OptionMenu(root, selected_type, "Fungi", "Fungi", "Bacteria", "Archaea", "Eukaryota", "All")
+    type_dropdown.pack(pady=10)
 
     # Create the status label for the GUI
     status_label = ttk.Label(root, text='', font=('Helvetica', 12), background="#dcdad5")

@@ -72,14 +72,17 @@ def delete_samples(notebook):
     body_request = {
         "query": {
             "match": {
-                'Kit ID': selected_kit
+                'Kit ID': selected_kit,
+                'Kingdom': ''
             }
         }
     }
 
     # Step 8: Add optional kingdom type to the delete_by_query request
     if selected_type.get() != "All":
-        body_request["Kingdom"] = selected_type.get()
+        body_request["query"]["match"]["Kingdom"] = selected_type.get()
+    else:
+        del body_request["query"]["match"]["Kingdom"]
 
     # Step 9: Execute delete_by_query operation on the index in Elasticsearch
     es.delete_by_query(index='microbiome', body=body_request)
@@ -123,7 +126,7 @@ def delete_samples_gui(root, notebook):
 
     selected_type = tk.StringVar()
     selected_type.set("Fungi")
-    type_dropdown = ttk.OptionMenu(root, selected_type, "Fungi", "Fungi", "Bacteria", "All")
+    type_dropdown = ttk.OptionMenu(root, selected_type, "Fungi", "Fungi", "Bacteria", "Archaea", "Eukaryota", "All")
     type_dropdown.pack(pady=10)
 
     kit_label = ttk.Label(root, text="Enter the Kit ID:", font=('Helvetica', 12), background="#dcdad5")
