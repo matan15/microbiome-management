@@ -4,43 +4,72 @@
 This project is designed to manage the microbiome-kibana integration. It has 7 tools to integrate with Kibana.
 
 ## Installation
-Download the latest release of the project, extract the files and run the main.exe file.
+Download the latest project release, extract the files, and run the main.exe file.
 
 IMPORTANT: Don't move/delete any files from the folders. moving/deleting files can crash the program.
 
 If you running the program for the first time, you will be prompted for credentials.
 
 ## Updating the program
-First, remove the program from your PC, then, download the latest version from the GitHub releases.
+First, you'll need to remove the program from your PC, then, download the latest version from the GitHub releases.
 
 ## Setup the project for development
+
+### Navigate to the directory you want to download the project
+```bash
+cd MY_DIRECTORY
+```
+replace ```MY_DIRECTORY``` with a real path to the directory.
 
 ### Clone the project
 
 ```bash
-  git clone https://github.com/matan15/kit-data-merger.git
+git clone https://github.com/matan15/kit-data-merger.git
 ```
 
 ### Go to the project directory
 
 ```bash
-  cd kit-data-merger
+cd kit-data-merger
 ```
 
 ### Create an environment and activate it
 
 ```bash
-  python -m venv env && cd env/Scripts && activate && cd ../..
+python -m venv env && cd env/Scripts && activate && cd ../..
 ```
 
 ### Install requirements
 ```bash
-  pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ### Run the project
 ```bash
-  python main.py
+python main.py
+```
+
+## Running the project for the second time...
+### Navigate to the directory where the project is located
+```bash
+cd MY_DIRECTORY
+```
+replace ```MY_DIRECTORY``` with a real path to the directory.
+
+### Go to the project directory
+
+```bash
+cd kit-data-merger
+```
+
+### Activate the environment
+```bash
+cd env/Scripts && activate && cd ../..
+```
+
+### Run the project
+```bash
+python main.py
 ```
 
 ## IMPORTANT: Meta-Data File Structure
