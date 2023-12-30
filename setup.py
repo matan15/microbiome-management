@@ -38,7 +38,8 @@ packages = [
     "elasticsearch",
     "csv",
     "tkhtmlview",
-    "markdown"
+    "markdown",
+    "certifi"
 ]
 
 # Set the options for the build

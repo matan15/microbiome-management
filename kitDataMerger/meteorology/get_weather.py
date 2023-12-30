@@ -14,6 +14,7 @@ from typing import List
 import re
 import logging
 import dotenv
+import certifi
 
 # Load environment variables from a .env file
 headers = {'Authorization': os.environ.get("API_KEY")}
@@ -102,7 +103,7 @@ def get_response_json(url, params=None):
     Returns:
     JSON data from the response.
     """
-    response = req.get(url, params=params, headers=headers)
+    response = req.get(url, params=params, headers=headers, verify=certifi.where())
     response.raise_for_status()
     return response.json()
 
@@ -308,7 +309,8 @@ def update_weather(filepath, radius, progress_var: tk.DoubleVar, percentage_labe
             }
             try:
                 response = req.get(url=f'https://api.ims.gov.il/v1/envista/stations/{station_id}/data', params=params,
-                                    headers=headers)
+                                    headers=headers,
+                                    verify=certifi.where())
             except ConnectionError:
                 logging.error('Connection error: Converting what I already have...')
                 df.to_csv(f"./kitDataMerger/meta_data_final.csv", index=False, encoding="utf-16")
