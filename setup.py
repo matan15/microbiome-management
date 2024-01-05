@@ -53,7 +53,7 @@ options = {
 # Define the setup configuration
 setup(
     name="kit Data Merger",
-    version="2.2",
+    version="2.3",
     options=options,
     executables=executables,
     author="Matan Naydis and Tomer Kimchi",
