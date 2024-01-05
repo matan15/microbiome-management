@@ -71,18 +71,23 @@ def delete_samples(notebook):
     # Step 7: Construct the body of the delete_by_query request
     body_request = {
         "query": {
-            "match": {
-                'Kit ID': selected_kit,
-                'Kingdom': ''
+            "bool": {
+                "must": [
+                    {"term": {"kit_id": selected_kit}},
+                    {"term": {"Kingdom.keyword": ''}}
+                ]
             }
         }
     }
 
     # Step 8: Add optional kingdom type to the delete_by_query request
     if selected_type.get() != "All":
-        body_request["query"]["match"]["Kingdom"] = selected_type.get()
+        for term in body_request["query"]["bool"]["must"]:
+            if "Kingdom.keyword" in term["term"].keys():
+                term["term"]["Kingdom.keyword"] = selected_type.get()
+                break
     else:
-        del body_request["query"]["match"]["Kingdom"]
+        body_request["query"]["bool"]["must"] = [{"term": {"kit_id": selected_kit}}]
 
     # Step 9: Execute delete_by_query operation on the index in Elasticsearch
     es.delete_by_query(index='microbiome', body=body_request)
