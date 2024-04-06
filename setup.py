@@ -59,8 +59,8 @@ options = {"build_exe": {"packages": packages, "include_files": includefiles}}
 
 # Define the setup configuration
 setup(
-    name="kit Data Merger",
-    version="2.3",
+    name="Microbiome Management",
+    version="2.4",
     options=options,
     executables=executables,
     author="Matan Naydis and Tomer Kimchi",
