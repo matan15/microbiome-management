@@ -1,63 +1,216 @@
-from tkinter import simpledialog
-from tkinter.messagebox import askyesno
+import tkinter as tk
+from tkinter import ttk
+import threading
+
+IMS_API_KEY_entry = None
+GOOGLE_TYPE_entry = None
+GOOGLE_PROJECT_ID_entry = None
+GOOGLE_PRIVATE_KEY_ID_entry = None
+GOOGLE_PRIVATE_KEY_entry = None
+GOOGLE_CLIENT_EMAIL_entry = None
+GOOGLE_CLIENT_ID_entry = None
+GOOGLE_AUTH_URI_entry = None
+GOOGLE_TOKEN_URI_entry = None
+GOOGLE_AUTH_PROVIDER_X509_CERT_URL_entry = None
+GOOGLE_CLIENT_X509_CERT_URL_entry = None
+GOOGLE_UNIVERSE_DOMAIN_entry = None
+root = None
+submit_btn = None
+
+
+def registering_credentials():
+    """
+    The function gets the valuse from the form, and if they are not empty, it writes the credentials into a .env file
+    """
+    # If one of the form's fields is empty, stop the function
+    if (
+        IMS_API_KEY_entry.get() == ""
+        or GOOGLE_TYPE_entry.get() == ""
+        or GOOGLE_PROJECT_ID_entry.get() == ""
+        or GOOGLE_PRIVATE_KEY_ID_entry.get() == ""
+        or GOOGLE_PRIVATE_KEY_entry.get() == ""
+        or GOOGLE_CLIENT_EMAIL_entry.get() == ""
+        or GOOGLE_CLIENT_ID_entry.get() == ""
+        or GOOGLE_AUTH_URI_entry.get() == ""
+        or GOOGLE_TOKEN_URI_entry.get() == ""
+        or GOOGLE_AUTH_PROVIDER_X509_CERT_URL_entry.get() == ""
+        or GOOGLE_CLIENT_X509_CERT_URL_entry.get() == ""
+        or GOOGLE_UNIVERSE_DOMAIN_entry.get() == ""
+    ):
+        return
+
+    # Disable all the fields and buttons to prevent user interaction
+    submit_btn.config(state="disabled")
+    GOOGLE_TYPE_entry.config(state="disabled")
+    GOOGLE_PROJECT_ID_entry.config(state="disabled")
+    GOOGLE_PRIVATE_KEY_ID_entry.config(state="disabled")
+    GOOGLE_PRIVATE_KEY_entry.config(state="disabled")
+    GOOGLE_CLIENT_EMAIL_entry.config(state="disabled")
+    GOOGLE_CLIENT_ID_entry.config(state="disabled")
+    GOOGLE_AUTH_URI_entry.config(state="disabled")
+    GOOGLE_TOKEN_URI_entry.config(state="disabled")
+    GOOGLE_AUTH_PROVIDER_X509_CERT_URL_entry.config(state="disabled")
+    GOOGLE_CLIENT_X509_CERT_URL_entry.config(state="disabled")
+    GOOGLE_UNIVERSE_DOMAIN_entry.config(state="disabled")
+
+    # Write all the credentials in a .env file
+    with open(".env", "w") as envFile:
+        envFile.write(
+            f"""# IMS
+API_KEY="{IMS_API_KEY_entry.get()}"
+
+# GOOGLE
+type="{GOOGLE_TYPE_entry.get()}"
+project_id="{GOOGLE_PROJECT_ID_entry.get()}"
+private_key_id="{GOOGLE_PRIVATE_KEY_ID_entry.get()}"
+private_key="{GOOGLE_PRIVATE_KEY_entry.get()}"
+client_email="{GOOGLE_CLIENT_EMAIL_entry.get()}"
+client_id="{GOOGLE_CLIENT_ID_entry.get()}"
+auth_uri="{GOOGLE_AUTH_URI_entry.get()}"
+token_uri="{GOOGLE_TOKEN_URI_entry.get()}"
+auth_provider_x509_cert_url="{GOOGLE_AUTH_PROVIDER_X509_CERT_URL_entry.get()}"
+client_x509_cert_url="{GOOGLE_CLIENT_X509_CERT_URL_entry.get()}"
+universe_domain="{GOOGLE_UNIVERSE_DOMAIN_entry.get()}"
+"""
+        )
+
+    # Re-enable back all the fields and buttons
+    submit_btn.config(state="enabled")
+    GOOGLE_TYPE_entry.config(state="enabled")
+    GOOGLE_PROJECT_ID_entry.config(state="enabled")
+    GOOGLE_PRIVATE_KEY_ID_entry.config(state="enabled")
+    GOOGLE_PRIVATE_KEY_entry.config(state="enabled")
+    GOOGLE_CLIENT_EMAIL_entry.config(state="enabled")
+    GOOGLE_CLIENT_ID_entry.config(state="enabled")
+    GOOGLE_AUTH_URI_entry.config(state="enabled")
+    GOOGLE_TOKEN_URI_entry.config(state="enabled")
+    GOOGLE_AUTH_PROVIDER_X509_CERT_URL_entry.config(state="enabled")
+    GOOGLE_CLIENT_X509_CERT_URL_entry.config(state="enabled")
+    GOOGLE_UNIVERSE_DOMAIN_entry.config(state="enabled")
+
+    # Quit from the window
+    root.destroy()
+    root.quit()
+
+
+def on_close():
+    """
+    If the credentials form closed, it will destroy the window.
+    """
+    root.destroy()
+    root.quit()
+
 
 def get_config():
     """
-    Configure and generate the necessary environment variables for Elasticsearch and IMS API.
-
-    This function prompts the user to enter required credentials such as cloud_id, user, password for Elasticsearch,
-    and API_KEY for IMS API. It creates or updates the '.env' file with the provided values.
-
-    If the '.env' file already contains valid credentials for both Elasticsearch and IMS API, the function does not
-    prompt the user and exits.
-
-    Returns:
-        None
+    Credentials form GUI
     """
-    with open(".env", 'w') as envFile:
-        envFile.write("")
+    global root, submit_btn, IMS_API_KEY_entry, GOOGLE_TYPE_entry, GOOGLE_PROJECT_ID_entry, GOOGLE_PRIVATE_KEY_ID_entry, GOOGLE_PRIVATE_KEY_entry, GOOGLE_CLIENT_EMAIL_entry, GOOGLE_CLIENT_ID_entry, GOOGLE_AUTH_URI_entry, GOOGLE_TOKEN_URI_entry, GOOGLE_AUTH_PROVIDER_X509_CERT_URL_entry, GOOGLE_CLIENT_X509_CERT_URL_entry, GOOGLE_UNIVERSE_DOMAIN_entry
 
-    with open(".env", 'r') as envFile:
-        initial_content = envFile.read()
+    root = tk.Tk()
 
-    if "cloud_id" in initial_content and "user" in initial_content and "password" in initial_content and "API_KEY" in initial_content:
-        return False
+    root.protocol("WM_DELETE_WINDOW", on_close)
 
-    with open(".env", 'a') as envFile:
-        if not 'ELASTIC' in initial_content:
-            envFile.write("# ELASTICSEARCH\n")
-            cloud_id = simpledialog.askstring("Configure credentials", "Enter the cloud Id:")
-            while not cloud_id:
-                answer = askyesno("Not valid value", "You have been entered a not valid value, do you want to enter a new value (yes) or exit (no)?")
-                if answer:
-                    cloud_id = simpledialog.askstring("Configure credentials", "Enter the cloud Id:")
-                else:
-                    return False
-            envFile.write("cloud_id=" + cloud_id + "\n")
-            user = simpledialog.askstring("Configure credentials", "Enter the user name in Kibana:")
-            while not user:
-                answer = askyesno("Not valid value", "You have been entered a not valid value, do you want to enter a new value (yes) or exit (no)?")
-                if answer:
-                    user = simpledialog.askstring("Configure credentials", "Enter the user name in Kibana:")
-                else:
-                    return False
-            envFile.write("user=" + user + "\n")
-            password = simpledialog.askstring("Configure credentials", "Enter the password in Kibana:")
-            while not password:
-                answer = askyesno("Not valid value", "You have been entered a not valid value, do you want to enter a new value (yes) or exit (no)?")
-                if answer:
-                    password = simpledialog.askstring("Configure credentials", "Enter the password in Kibana:")
-                else:
-                    return False
-            envFile.write("password=" + password + "\n\n")
+    root.resizable(False, False)
 
-        if not 'IMS' in initial_content:
-            envFile.write("# IMS\n")
-            api_key = simpledialog.askstring("Configure credentials", "Enter the IMS secret token:")
-            while not api_key:
-                answer = askyesno("Not valid value", "You have been entered a not valid value, do you want to enter a new value (yes) or exit (no)?")
-                if answer:
-                    api_key = simpledialog.askstring("Configure credentials", "Enter the IMS secret token:")
-                else:
-                    return False
-            envFile.write(f'API_KEY="{api_key}"\n')
+    heading = ttk.Label(root, text="Credentials Update", font=("Helvetica", 16, "bold"))
+    heading.grid(row=0, column=0, columnspan=2, pady=10)
+
+    IMS_heading = ttk.Label(root, text="IMS", font=("Helvetica", 14, "bold"))
+    IMS_heading.grid(row=1, column=0, sticky="W")
+
+    IMS_API_KEY_label = ttk.Label(root, text="API KEY", font=("Helvetica", 12))
+    IMS_API_KEY_label.grid(row=2, column=0, sticky="W")
+
+    IMS_API_KEY_entry = ttk.Entry(root)
+    IMS_API_KEY_entry.grid(row=2, column=1, pady=5)
+
+    GOOGLE_heading = ttk.Label(root, text="GOOGLE", font=("Helvetica", 14, "bold"))
+    GOOGLE_heading.grid(row=3, column=0, sticky="W")
+
+    GOOGLE_TYPE_label = ttk.Label(root, text="type", font=("Helvetica", 12))
+    GOOGLE_TYPE_label.grid(row=4, column=0, sticky="W")
+
+    GOOGLE_TYPE_entry = ttk.Entry(root)
+    GOOGLE_TYPE_entry.grid(row=4, column=1)
+
+    GOOGLE_PROJECT_ID_label = ttk.Label(root, text="project id", font=("Helvetica", 12))
+    GOOGLE_PROJECT_ID_label.grid(row=5, column=0, sticky="W")
+
+    GOOGLE_PROJECT_ID_entry = ttk.Entry(root)
+    GOOGLE_PROJECT_ID_entry.grid(row=5, column=1)
+
+    GOOGLE_PRIVATE_KEY_ID_label = ttk.Label(
+        root, text="private key id", font=("Helvetica", 12)
+    )
+    GOOGLE_PRIVATE_KEY_ID_label.grid(row=6, column=0, sticky="W")
+
+    GOOGLE_PRIVATE_KEY_ID_entry = ttk.Entry(root)
+    GOOGLE_PRIVATE_KEY_ID_entry.grid(row=6, column=1)
+
+    GOOGLE_PRIVATE_KEY_label = ttk.Label(
+        root, text="private key", font=("Helvetica", 12)
+    )
+    GOOGLE_PRIVATE_KEY_label.grid(row=7, column=0, sticky="W")
+
+    GOOGLE_PRIVATE_KEY_entry = ttk.Entry(root)
+    GOOGLE_PRIVATE_KEY_entry.grid(row=7, column=1)
+
+    GOOGLE_CLIENT_EMAIL_label = ttk.Label(
+        root, text="client email", font=("Helvetica", 12)
+    )
+    GOOGLE_CLIENT_EMAIL_label.grid(row=8, column=0, sticky="W")
+
+    GOOGLE_CLIENT_EMAIL_entry = ttk.Entry(root)
+    GOOGLE_CLIENT_EMAIL_entry.grid(row=8, column=1)
+
+    GOOGLE_CLIENT_ID_label = ttk.Label(root, text="client id", font=("Helvetica", 12))
+    GOOGLE_CLIENT_ID_label.grid(row=9, column=0, sticky="W")
+
+    GOOGLE_CLIENT_ID_entry = ttk.Entry(root)
+    GOOGLE_CLIENT_ID_entry.grid(row=9, column=1)
+
+    GOOGLE_AUTH_URI_label = ttk.Label(root, text="auth URI", font=("Helvetica", 12))
+    GOOGLE_AUTH_URI_label.grid(row=10, column=0, sticky="W")
+
+    GOOGLE_AUTH_URI_entry = ttk.Entry(root)
+    GOOGLE_AUTH_URI_entry.grid(row=10, column=1)
+
+    GOOGLE_TOKEN_URI_label = ttk.Label(root, text="token URI", font=("Helvetica", 12))
+    GOOGLE_TOKEN_URI_label.grid(row=11, column=0, sticky="W")
+
+    GOOGLE_TOKEN_URI_entry = ttk.Entry(root)
+    GOOGLE_TOKEN_URI_entry.grid(row=11, column=1)
+
+    GOOGLE_AUTH_PROVIDER_X509_CERT_URL_label = ttk.Label(
+        root, text="auth provider x509 cert URL", font=("Helvetica", 12)
+    )
+    GOOGLE_AUTH_PROVIDER_X509_CERT_URL_label.grid(row=12, column=0, sticky="W")
+
+    GOOGLE_AUTH_PROVIDER_X509_CERT_URL_entry = ttk.Entry(root)
+    GOOGLE_AUTH_PROVIDER_X509_CERT_URL_entry.grid(row=12, column=1)
+
+    GOOGLE_CLIENT_X509_CERT_URL_label = ttk.Label(
+        root, text="client x509 cert URL", font=("Helvetica", 12)
+    )
+    GOOGLE_CLIENT_X509_CERT_URL_label.grid(row=13, column=0, sticky="W")
+
+    GOOGLE_CLIENT_X509_CERT_URL_entry = ttk.Entry(root)
+    GOOGLE_CLIENT_X509_CERT_URL_entry.grid(row=13, column=1)
+
+    GOOGLE_UNIVERSE_DOMAIN_label = ttk.Label(
+        root, text="universe domain", font=("Helvetica", 12)
+    )
+    GOOGLE_UNIVERSE_DOMAIN_label.grid(row=14, column=0, sticky="W")
+
+    GOOGLE_UNIVERSE_DOMAIN_entry = ttk.Entry(root)
+    GOOGLE_UNIVERSE_DOMAIN_entry.grid(row=14, column=1)
+
+    submit_btn = ttk.Button(
+        root,
+        text="Submit",
+        command=lambda: threading.Thread(target=registering_credentials).start(),
+    )
+    submit_btn.grid(row=15, column=0, columnspan=2, pady=5)
+
+    root.mainloop()

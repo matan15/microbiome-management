@@ -2,87 +2,97 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import showinfo, askyesno
 
-from elasticsearch import Elasticsearch
-
-import dotenv
-import os
-
 import threading
 
 import logging
 
-dotenv.load_dotenv(dotenv.find_dotenv())
+from utils import get_google_creds
+from google.cloud import firestore
+from google.cloud.firestore import FieldFilter
+from google.oauth2 import service_account
+
+# Get credentials from .env file
+creds = get_google_creds()
+
+# Create google credentials object
+credentials = service_account.Credentials.from_service_account_info(creds)
+
+# Connect to the database
+db = firestore.Client(
+    project=creds["project_id"], credentials=credentials, database="microbiome"
+)
 
 submit_button = None
 status_label = None
 selected_type = None
+progress_var = None
+percentage_label = None
+type_dropdown = None
+
 
 def delete_data(notebook):
-    """
-    Deletes all data from Elasticsearch index.
+    # Ask for user confirmation
+    if not askyesno(
+        "Are you sure?",
+        "Are you sure you want to delete all the data? Note that there is no way to cancel this operation.",
+    ):
+        return
 
-    This function performs the following steps:
-    1. Asks the user for confirmation before proceeding with the deletion operation.
-    2. If the user chooses not to proceed, the function returns without performing any action.
-    3. Disables the submit button to prevent multiple deletion requests.
-    4. Displays a "deleting..." message in the status label.
-    5. Establishes a connection to Elasticsearch using specified cloud ID, username, and password.
-    6. Deletes all data from the index using the delete_by_query method.
-    7. Updates the status label to indicate successful deletion.
-    8. Displays an information message indicating the successful deletion.
-    9. Logs the deletion operation as a success.
-    10. Re-enables the submit button for future operations.
-
-    :return: None
-    """
-    # Step 1: Ask for user confirmation
-    if not askyesno("Are you sure?", "Are you sure you want to delete all the data? Note that there is no way to cancel this operation."):
-        return 
-
-    # Step 2: Disable submit button
+    # Disable buttons to prevent user interaction during deletion process
     for i in range(0, 7):
         if i == 3:
             continue
         notebook.tab(i, state=tk.DISABLED)
     submit_button.config(state=tk.DISABLED)
+    type_dropdown.config(state=tk.DISABLED)
 
-    # Step 3: Update status label
+    # Update status label
     status_label.config(text="deleting...")
 
-    # Step 4: Establish connection to Elasticsearch
-    es = Elasticsearch(
-        cloud_id=os.environ.get("cloud_id"),
-        http_auth=(os.environ.get("user"), os.environ.get("password"))
-    )
-
-    body_request = {
-        "query": {
-            "match_all": {},
-            "match": {
-                'Kingdom': ''
-            }
-        }
-    }
-    
     if selected_type.get() == "All":
-        body_request["query"]["match_all"] = {}
-        del body_request['query']['match']
+        # If the user selected "All" in the deletion type, the function will query all the data
+        query = db.collection("microbiome")
     else:
-        body_request["query"]["match"]["Kingdom"] = selected_type.get()
-        del body_request['query']['match_all']
+        # If the user selected a specific Kingdom to delete, the function will query all the data with this Kingdom
+        query = db.collection("microbiome").where(
+            filter=FieldFilter("Kingdom", "==", selected_type.get())
+        )
 
-    # Step 5: Delete all data from the index
-    es.delete_by_query(index="microbiome", body=body_request)
+    # Create records generator object
+    records_to_delete = query.stream()
 
-    # Step 6: Update status label and display success message
+    count = 0
+    # Count total amount of records to delete
+    total_records = sum(1 for _ in records_to_delete)
+
+    batch = db.batch()
+
+    # Delete the records in batches
+    while True:
+        deleted = 0
+        for doc in query.limit(500).stream():
+            doc_ref = db.collection("microbiome").document(doc.id)
+            batch.delete(doc_ref)
+            count += 1
+            deleted += 1
+            progress = (count / total_records) * 100
+            progress_var.set(progress)
+            percentage_label.config(text=(("%.2f " % progress) + "%"))
+
+        if deleted == 0:
+            break
+        batch.commit()
+
+    # Update status label and display success message
     status_label.config(text="The data has been deleted successfully.")
     showinfo("The data has been deleted", "The data has been deleted successfully.")
-    
-    # Step 7: Log deletion operation as a success
+
+    # Log deletion operation as a success
     logging.info("The data has been deleted successfully.")
 
-    # Step 8: Re-enable submit button
+    # Re-enable the buttons back
     submit_button.config(state=tk.NORMAL)
+    type_dropdown.config(state=tk.NORMAL)
     for i in range(0, 7):
         if i == 3:
             continue
@@ -90,50 +100,65 @@ def delete_data(notebook):
 
 
 def start_processing(notebook):
-    """
-    Initiates a separate thread to start the data deletion process using the delete_data function.
-
-    This function performs the following steps:
-    1. Creates a new thread, targeting the delete_data function, to perform data deletion in the background.
-    2. Starts the created thread to execute the delete_data function concurrently.
-    3. Allows the main thread to continue its operation without waiting for the deletion process to complete.
-
-    Note: The use of threading allows for non-blocking execution, ensuring the responsiveness of the user interface
-    during time-consuming operations like data deletion.
-
-    :return: None
-    """
+    # Call the deletion function as a sub-process
     threading.Thread(target=lambda: delete_data(notebook)).start()
 
+
 def delete_all_data_gui(root, notebook):
-    """
-    This function creates a GUI for deleting all the data from an Elasticsearch index.
-
-    Args:
-        root (tkinter.Tk): The root window of the GUI.
-
-    Returns:
-        None
-    """
-    global submit_button, status_label, selected_type
+    global submit_button, status_label, selected_type, progress_var, percentage_label, type_dropdown
 
     # Create the title label for the GUI
-    title_label = ttk.Label(root, text='Delete All the data', font=('Helvetica', 16, 'bold'), background="#dcdad5")
+    title_label = ttk.Label(
+        root,
+        text="Delete All the data",
+        font=("Helvetica", 16, "bold"),
+        background="#dcdad5",
+    )
     title_label.pack(pady=10)
 
     # Create the warning label for the GUI
-    warning_label = ttk.Label(root, text="WARNING: All the data will be deleted", font=('Helvetica', 14, 'bold'), foreground="red", background="#dcdad5")
+    warning_label = ttk.Label(
+        root,
+        text="WARNING: All the data will be deleted",
+        font=("Helvetica", 14, "bold"),
+        foreground="red",
+        background="#dcdad5",
+    )
     warning_label.pack(pady=10)
 
     selected_type = tk.StringVar()
     selected_type.set("Fungi")
-    type_dropdown = ttk.OptionMenu(root, selected_type, "Fungi", "Fungi", "Bacteria", "Archaea", "Eukaryota", "All")
+    type_dropdown = ttk.OptionMenu(
+        root, selected_type, "Fungi", "Fungi", "Bacteria", "Archaea", "Eukaryota", "All"
+    )
     type_dropdown.pack(pady=10)
 
+    # Create a progress bar
+    progress_var = tk.DoubleVar()
+    progress_bar = ttk.Progressbar(
+        root, length=300, variable=progress_var, mode="determinate"
+    )
+    progress_bar.pack(pady=10)
+
+    # Create a label to display the progress percentage
+    percentage_label = ttk.Label(
+        root, text="0%", font=("Helvetica", 12), background="#dcdad5"
+    )
+    percentage_label.pack()
+
     # Create the status label for the GUI
-    status_label = ttk.Label(root, text='', font=('Helvetica', 12), background="#dcdad5")
+    status_label = ttk.Label(
+        root, text="", font=("Helvetica", 12), background="#dcdad5"
+    )
     status_label.pack(pady=10)
 
     # Create the submit button for the GUI
-    submit_button = tk.Button(root, text='Delete', font=('Helvetica', 12), command=lambda: start_processing(notebook), background='red', fg='white')
+    submit_button = tk.Button(
+        root,
+        text="Delete",
+        font=("Helvetica", 12),
+        command=lambda: start_processing(notebook),
+        background="red",
+        fg="white",
+    )
     submit_button.pack()

@@ -8,3 +8,4 @@ Fungi_meta_data
 meta_data_final.csv
 *.log
 .env
+kitDataMerger/fungi/data

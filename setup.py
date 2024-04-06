@@ -5,50 +5,57 @@ import sys
 base = "Win32GUI" if sys.platform == "win32" else None
 
 # Define the list of executables to be created
-executables = [Executable("main.py", base=base, icon="./static/icons/plant.ico", target_name="kit Data Merger")]
+executables = [
+    Executable(
+        "main.py",
+        base=base,
+        icon="./static/icons/plant.ico",
+        target_name="Microbiome Management",
+    )
+]
 
 includefiles = [
-    "set_config.py", 
-    "README.md",
-    "static",
+    "GCP",
+    "KitDataMerger",
     "logs",
-    "kitDataMerger",
-    "GCS",
-    "pages"
+    "pages",
+    "static",
+    ".gitignore",
+    "README.md",
+    "set_config.py",
+    "sh_taxonomy_qiime_ver9_99_29.11.2022.txt",
+    "utils.py",
 ]
 
 # Define the list of packages required for the executable
 packages = [
     "os",
-    "sys",
-    "shutil",
-    "threading",
-    "tkinter",
-    "requests",
     "dotenv",
-    "pandas",
-    "re",
+    "typing",
+    "sys",
+    "cx_Freeze",
+    "tkinter",
+    "threading",
+    "PIL",
+    "shutil",
     "logging",
     "datetime",
-    "pytz",
-    "numpy",
-    "geopy",
-    "time",
-    "typing",
-    "elasticsearch",
     "csv",
+    "certifi",
+    "geopy",
+    "google",
     "tkhtmlview",
     "markdown",
-    "certifi"
+    "tempfile",
+    "pandas",
+    "re",
+    "requests",
+    "pytz",
+    "numpy",
 ]
 
 # Set the options for the build
-options = {
-    "build_exe": {
-        "packages": packages,
-        "include_files": includefiles
-    }
-}
+options = {"build_exe": {"packages": packages, "include_files": includefiles}}
 
 # Define the setup configuration
 setup(
@@ -57,6 +64,4 @@ setup(
     options=options,
     executables=executables,
     author="Matan Naydis and Tomer Kimchi",
-    description="""This project is designed to merge sample data from different plant areas (root, flower, fruit, and soil).
-The samples are part of a microbiome research program, and the files are merged by sample kits."""
 )

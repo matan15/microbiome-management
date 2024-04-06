@@ -1,7 +1,7 @@
 
-# Microbiome Kibana Management
+# Microbiome Management
 
-This project is designed to manage the microbiome-kibana integration. It has 7 tools to integrate with Kibana.
+This project is designed to manage the microbiome data. It has 7 tools to manage the data.
 
 ## Installation
 Download the latest project release, extract the files, and run the main.exe file.
@@ -9,6 +9,9 @@ Download the latest project release, extract the files, and run the main.exe fil
 IMPORTANT: Don't move/delete any files from the folders. moving/deleting files can crash the program.
 
 If you running the program for the first time, you will be prompted for credentials.
+
+## Requirements
+The software requires an internet connection to make an integration with the database and the Israel Meteorologic Services. Also, the program requires credentials. If you run the program for the first time, you will be prompted for credentials.
 
 ## Updating the program
 First, you'll need to remove the program from your PC, then, download the latest version from the GitHub releases.
@@ -91,11 +94,11 @@ The user window is divided to 7 tools, which allows to the user do 7 actions wit
 You can switch between actions in the toolbar at the top of the window.
 
 1. "Documentation": The documentation about the project, you can read it to know how to use the program.
-2. "Upload Samples": A tool to upload samples to Kibana. In the first field, you select the data folder using the "Browse" button (inside the folder the data should be divided into sequences, in each sequence there must be an "ASV" folder). In the second field, you select the metadata file (A CSV file, check the section "IMPORTANT: Meta-Data File Structure"). If you want to upload the data to Kibana, check the checkbox "Upload to Kibana". The program will merge files and upload the data to Kibana. At the end, the program will save the data that has been uploaded to Kibana in any location you choose at the end of the running of the program
-3. "Delete kit": At the field, you need to enter a kit ID (it must be a number). The program will delete the kit from Kibana.
-4. "Delete All Data": the program will delete all the data from Kibana.
-5. "Get all the data": In the field, you should choose a location where to save the data using the "Browse" button. Once you click submit, the program will download all the data to kibana_data.csv in the location you chose.
-6. "Get Kit": In the first field, you should write the kit ID you want to get (the kit ID must be a number). In the second field, you should select the location where to save the data using the "Browse" button. Once you click Submit, the program will save the data in the location you provided in the file kibana_data.csv.
+2. "Upload Samples": A tool to upload samples to Google Storage. In the first field, you select the data folder using the "Browse" button (inside the folder the data should be divided into sequences, in each sequence there must be an "ASV" folder). In the second field, you select the metadata file (A CSV file, check the section "IMPORTANT: Meta-Data File Structure"). If you want to upload the data to Google Storage, check the checkbox "Upload Samples". The program will merge files and upload the data to Google Storage. At the end, the program will save the data that has been uploaded to Google Storage and lab data (If fungi data is uploaded) in any location you choose at the end of the running of the program
+3. "Delete kit": At the field, you need to enter a kit ID (it must be a number). The program will delete the kit from Google storage.
+4. "Delete All Data": the program will delete all the data from Google Storage.
+5. "Get all the data": In the field, you should choose a location where to save the data using the "Browse" button. Once you click submit, the program will download all the data to microbiome_data.csv in the location you chose.
+6. "Get Kit": In the first field, you should write the kit ID you want to get (the kit ID must be a number). In the second field, you should select the location where to save the data using the "Browse" button. Once you click Submit, the program will save the data in the location you provided in the file kit_(kit id)_data.csv.
 6. "Update Credentials": if there are credentials that you need to change, you can change them in the "Update Credentials" tool.
 
 ## Issues & Questions
