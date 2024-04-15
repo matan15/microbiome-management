@@ -132,9 +132,9 @@ def parse_cord(d):
 
 def sort_samples(
     samples,
-    progress_var: tk.DoubleVar,
-    percentage_label: tk.Label,
-    status_label: tk.Label,
+    progress_var,
+    percentage_label,
+    status_label,
 ):
     """
     Sort samples based on station distances.
@@ -148,7 +148,7 @@ def sort_samples(
     Returns:
     Dictionary with samples grouped by station ID.
     """
-    status_label.config(text="Sorting Samples")
+    status_label.configure(text="Sorting Samples")
     number_of_samples = len(samples)
     progress_counter = 0
     sample_by_stations = {}
@@ -175,9 +175,9 @@ def sort_samples(
                     sample_by_stations[station_id] = []
                 sample_by_stations[station_id].append(sample)
         progress_counter += 1
-        progress = (progress_counter / number_of_samples) * 100
+        progress = progress_counter / number_of_samples
         progress_var.set(progress)
-        percentage_label.config(text=(("%.2f " % progress) + "%"))
+        percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
     return sample_by_stations
 
 
@@ -213,9 +213,9 @@ def parse_table(
     df: pd.DataFrame,
     stations,
     radius,
-    progress_var: tk.DoubleVar,
-    percentage_label: tk.Label,
-    status_label: tk.Label,
+    progress_var,
+    percentage_label,
+    status_label,
 ):
     # TODO: check if there is option to make the program more efficient by adding kit id to the data that is returned.
 
@@ -233,7 +233,7 @@ def parse_table(
     Returns:
     List of dictionaries representing parsed samples.
     """
-    status_label.config(text="Filtering meta data")
+    status_label.configure(text="Filtering meta data")
     file_ids = set()
     num_of_files = sum([1 for _ in os.listdir("./kitDataMerger/merged_asv_data")])
     count = 0
@@ -241,13 +241,13 @@ def parse_table(
         if filename.startswith("S_") and filename.endswith(".csv"):
             file_id = filename.split("_")[1]
             file_ids.add(str(file_id))
-        progress = (count / num_of_files) * 100
+        progress = count / num_of_files
         progress_var.set(progress)
-        percentage_label.config(text=(("%.2f " % progress) + "%"))
+        percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
 
     df = df[df["Kit ID"].astype(str).isin(file_ids)]
 
-    status_label.config(text="Parsing Table")
+    status_label.configure(text="Parsing Table")
     samples = []
     rows = df.iterrows()
     number_of_rows = len(df.index)
@@ -306,18 +306,18 @@ def parse_table(
         data["stations"].sort(key=lambda a: a.get("dis"))
         samples.append(data)
         progress_counter += 1
-        progress = (progress_counter / number_of_rows) * 100
+        progress = progress_counter / number_of_rows
         progress_var.set(progress)
-        percentage_label.config(text=(("%.2f " % progress) + "%"))
+        percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
     return samples
 
 
 def update_weather(
     filepath,
     radius,
-    progress_var: tk.DoubleVar,
-    percentage_label: tk.Label,
-    status_label: tk.Label,
+    progress_var,
+    percentage_label,
+    status_label,
 ):
     """
     Update weather information for samples in a CSV file.
@@ -335,7 +335,7 @@ def update_weather(
     try:
         stations = get_stations_json()
     except req.exceptions.SSLError:
-        status_label.config(text="There was an error with SSL.")
+        status_label.configure(text="There was an error with SSL.")
         showerror("SSL error", "There is an error with SSL.")
         return False
 
@@ -385,12 +385,12 @@ def update_weather(
     )
     while True:
         samples = sort_samples(samples, progress_var, percentage_label, status_label)
-        status_label.config(text="Getting Information")
+        status_label.configure(text="Getting Information")
         number_of_samples = len(samples)
         progress_counter = 0
-        progress = (progress_counter / number_of_samples) * 100
+        progress = progress_counter / number_of_samples
         progress_var.set(progress)
-        percentage_label.config(text=(("%.2f " % progress) + "%"))
+        percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
         for station_id in samples.keys():
             samples[station_id] = sorted(
                 samples[station_id], key=lambda data: data["date"]
@@ -407,17 +407,13 @@ def update_weather(
                     headers=headers,
                     verify=certifi.where(),
                 )
-            except ConnectionError:
-                logging.error("Connection error: Converting what I already have...")
-                df.to_csv(
-                    f"./kitDataMerger/meta_data_final.csv",
-                    index=False,
-                    encoding="utf-16",
-                )
-                logging.info(
-                    f"The file was saved in the same directory of the original file as"
-                    f' "meta_data_final.csv"'
-                )
+            except ConnectionError as e:
+                logging.error("Connection error: There was a problem with connection to the Israeli Meteorologic Services.")
+                showerror("Connection Error", f"There was a problem with connection to the Israeli Meteorologic Services.\n{e}")
+                return False
+            except Exception as e:
+                logging.error("Error: Something went wrong while getting meteorologic data.")
+                showerror(f"Something went wrong", "Something went wrong while getting meteorologic data.\n{e}")
                 return False
             if response.status_code == 200:
                 response = response.json()
@@ -460,12 +456,12 @@ def update_weather(
                                     ) and channel["valid"]:
                                         sample[channel["name"]] = channel["value"]
             progress_counter += 1
-            progress = (progress_counter / number_of_samples) * 100
+            progress = progress_counter / number_of_samples
             progress_var.set(progress)
-            percentage_label.config(text=(("%.2f " % progress) + "%"))
+            percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
 
         length = sum([len(samples[station_id]) for station_id in samples])
-        status_label.config(text="Updating")
+        status_label.configure(text="Updating")
         progress_counter = 0
         for station_id in samples:
             for sample in samples[station_id]:
@@ -512,12 +508,12 @@ def update_weather(
                     sample["Rain"] if not pd.isnull(sample["Rain"]) else "__"
                 )
                 progress_counter += 1
-                progress = (progress_counter / length) * 100
+                progress = progress_counter / length
                 progress_var.set(progress)
-                percentage_label.config(text=(("%.2f " % progress) + "%"))
+                percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
 
         empty_samples = []
-        status_label.config(text="Collecting samples that haven't been updated")
+        status_label.configure(text="Collecting samples that haven't been updated")
         length = sum([len(samples[station_id]) for station_id in samples])
         progress_counter = 0
         for station_id in samples:
@@ -542,9 +538,9 @@ def update_weather(
                     if sample["stations"]:
                         empty_samples.append(sample)
                 progress_counter += 1
-                progress = (progress_counter / length) * 100
+                progress = progress_counter / length
                 progress_var.set(progress)
-                percentage_label.config(text=(("%.2f " % progress) + "%"))
+                percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
         if not empty_samples:
             break
         samples = empty_samples
@@ -556,6 +552,6 @@ def update_weather(
     logging.info(
         f'The file was saved in the same directory of the original file as "meta_data_final.csv"'
     )
-    status_label.config(text="")
+    status_label.configure(text="")
 
     return True

@@ -1,5 +1,4 @@
-import tkinter as tk
-from tkinter import ttk
+import customtkinter as ctk
 from tkinter.messagebox import showinfo, askyesno
 
 import threading
@@ -34,20 +33,17 @@ def delete_data(notebook):
     # Ask for user confirmation
     if not askyesno(
         "Are you sure?",
-        "Are you sure you want to delete all the data? Note that there is no way to cancel this operation.",
+        f"Are you sure you want to delete all the {selected_type.get() + ' ' if selected_type.get() != 'All' else ''}data? Note that there is no way to cancel this operation.",
     ):
         return
 
     # Disable buttons to prevent user interaction during deletion process
-    for i in range(0, 7):
-        if i == 3:
-            continue
-        notebook.tab(i, state=tk.DISABLED)
-    submit_button.config(state=tk.DISABLED)
-    type_dropdown.config(state=tk.DISABLED)
+    notebook.configure(state="disabled")
+    submit_button.configure(state="disabled")
+    type_dropdown.configure(state="disabled")
 
     # Update status label
-    status_label.config(text="deleting...")
+    status_label.configure(text="deleting...")
 
     if selected_type.get() == "All":
         # If the user selected "All" in the deletion type, the function will query all the data
@@ -75,28 +71,25 @@ def delete_data(notebook):
             batch.delete(doc_ref)
             count += 1
             deleted += 1
-            progress = (count / total_records) * 100
+            progress = count / total_records
             progress_var.set(progress)
-            percentage_label.config(text=(("%.2f " % progress) + "%"))
+            percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
 
         if deleted == 0:
             break
         batch.commit()
 
     # Update status label and display success message
-    status_label.config(text="The data has been deleted successfully.")
+    status_label.configure(text="The data has been deleted successfully.")
     showinfo("The data has been deleted", "The data has been deleted successfully.")
 
     # Log deletion operation as a success
     logging.info("The data has been deleted successfully.")
 
     # Re-enable the buttons back
-    submit_button.config(state=tk.NORMAL)
-    type_dropdown.config(state=tk.NORMAL)
-    for i in range(0, 7):
-        if i == 3:
-            continue
-        notebook.tab(i, state=tk.NORMAL)
+    submit_button.configure(state="normal")
+    type_dropdown.configure(state="normal")
+    notebook.configure(state="normal")
 
 
 def start_processing(notebook):
@@ -108,57 +101,56 @@ def delete_all_data_gui(root, notebook):
     global submit_button, status_label, selected_type, progress_var, percentage_label, type_dropdown
 
     # Create the title label for the GUI
-    title_label = ttk.Label(
+    title_label = ctk.CTkLabel(
         root,
         text="Delete All the data",
         font=("Helvetica", 16, "bold"),
-        background="#dcdad5",
     )
     title_label.pack(pady=10)
 
     # Create the warning label for the GUI
-    warning_label = ttk.Label(
+    warning_label = ctk.CTkLabel(
         root,
         text="WARNING: All the data will be deleted",
-        font=("Helvetica", 14, "bold"),
-        foreground="red",
-        background="#dcdad5",
+        font=("Helvetica", 16, "bold"),
+        text_color=("red", "red"),
     )
     warning_label.pack(pady=10)
 
-    selected_type = tk.StringVar()
-    selected_type.set("Fungi")
-    type_dropdown = ttk.OptionMenu(
-        root, selected_type, "Fungi", "Fungi", "Bacteria", "Archaea", "Eukaryota", "All"
+    selected_type = ctk.StringVar(value="Fungi")
+    type_dropdown = ctk.CTkOptionMenu(
+        root, variable=selected_type, values=["Fungi", "Bacteria", "Archaea", "Eukaryota", "All"]
     )
     type_dropdown.pack(pady=10)
 
     # Create a progress bar
-    progress_var = tk.DoubleVar()
-    progress_bar = ttk.Progressbar(
-        root, length=300, variable=progress_var, mode="determinate"
+    progress_var = ctk.DoubleVar()
+    progress_bar = ctk.CTkProgressBar(
+        root, width=300, variable=progress_var, mode="determinate", orientation="horizontal"
     )
     progress_bar.pack(pady=10)
 
     # Create a label to display the progress percentage
-    percentage_label = ttk.Label(
-        root, text="0%", font=("Helvetica", 12), background="#dcdad5"
+    percentage_label = ctk.CTkLabel(
+        root, text="0%", font=("Helvetica", 12)
     )
     percentage_label.pack()
 
     # Create the status label for the GUI
-    status_label = ttk.Label(
-        root, text="", font=("Helvetica", 12), background="#dcdad5"
+    status_label = ctk.CTkLabel(
+        root, text="", font=("Helvetica", 12)
     )
     status_label.pack(pady=10)
 
     # Create the submit button for the GUI
-    submit_button = tk.Button(
+    submit_button = ctk.CTkButton(
         root,
         text="Delete",
         font=("Helvetica", 12),
         command=lambda: start_processing(notebook),
-        background="red",
-        fg="white",
+        fg_color=("red", "red"),
+        hover=True,
+        text_color="white",
+        corner_radius=5
     )
     submit_button.pack()

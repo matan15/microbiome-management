@@ -37,12 +37,13 @@ def update_fungi_ids(fungi_data_folder, progress_var, percentage_label):
                 )
 
                 progress_counter += 1
-                progress = (progress_counter / total_files) * 100
+                progress = progress_counter / total_files
                 progress_var.set(progress)
-                percentage_label.config(text=(("%.2f " % progress) + "%"))
+                percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
 
             # Raise an error if file is not exist
             except FileNotFoundError as e:
-                percentage_label.config(text="0 %")
+                progress_var.set(0)
+                percentage_label.configure(text="0 %")
                 showerror("Error", "An error has occurred. File Not Found.")
                 raise FileNotFoundError(e)

@@ -1,8 +1,7 @@
 import os
 import sys
 
-import tkinter as tk
-from tkinter import ttk
+import customtkinter as ctk
 
 from PIL import Image, ImageTk
 
@@ -32,10 +31,13 @@ def loading_screen():
     """
     Loading GUI while checking if the user is connected to the Internet and the program has the needed credentials.
     """
-    root = tk.Tk()
+    root = ctk.CTk()
+    root.attributes('-topmost', True)
 
-    image = ImageTk.PhotoImage(
-        Image.open("static//icons//plant.ico").resize((256, 256), Image.LANCZOS)
+    image = ctk.CTkImage(
+        light_image=Image.open("static//icons//plant.ico").resize((256, 256), Image.LANCZOS),
+        dark_image=Image.open("static//icons//plant.ico").resize((256, 256), Image.LANCZOS),
+        size=(256, 256)
     )
 
     height, width = 430, 600
@@ -44,43 +46,40 @@ def loading_screen():
     root.geometry("{}x{}+{}+{}".format(width, height, x, y))
     root.overrideredirect(True)
 
-    root.config(background="#2F6C60")
+    root.configure(fg_color="#2F6C60")
 
     root.resizable(False, False)
 
-    heading = tk.Label(
+    heading = ctk.CTkLabel(
         root,
         text="Microbiome Management",
-        bg="#2F6C60",
-        font=("Trebuchet Ms", 15, "bold"),
-        fg="#FFFFFF",
+        fg_color="#2F6C60",
+        font=("Trebuchet Ms", 18, "bold"),
+        text_color="#FFFFFF",
+        justify="center"
     )
-    heading.place(x=180, y=25)
+    heading.pack(pady=20)
 
-    bg_image = tk.Label(root, image=image, bg="#2F6C60")
-    bg_image.place(x=180, y=65)
+    bg_image = ctk.CTkLabel(root, text="", image=image, fg_color="#2F6C60", justify="center")
+    bg_image.pack(pady=10)
 
-    progress_label = tk.Label(
+    progress_label = ctk.CTkLabel(
         root,
         text="Loading...",
         font=("Trebuchet Ms", 13, "bold"),
-        fg="#FFFFFF",
-        bg="#2F6C60",
+        text_color="#FFFFFF",
+        bg_color="#2F6C60",
+        justify="center"
     )
-    progress_label.place(x=110, y=340)
+    progress_label.pack(pady=10)
 
-    progress = ttk.Style()
-    progress.theme_use("clam")
-    progress.configure("red.Horizontal.TProgressbar", background="#108cff")
-
-    progress = ttk.Progressbar(
+    progress = ctk.CTkProgressBar(
         root,
-        orient=tk.HORIZONTAL,
-        length=400,
+        orientation="horizontal",
+        width=300,
         mode="determinate",
-        style="red.Horizontal.TProgressbar",
     )
-    progress.place(x=110, y=370)
+    progress.pack()
 
     counter = 0
 
@@ -126,7 +125,7 @@ def loading_screen():
                         "Connection error",
                         "The program is requiring internet connection. It seems that you are not connected to the internet, please check your connection and click ok",
                     )
-            progress["value"] = (counter / total) * 100
+            progress.set(counter / total)
             counter += 1
             root.after(1000, load)
         else:
@@ -149,44 +148,29 @@ def menu():
     from pages.get_kit import get_kit_gui
     from pages.update_credentials import update_credentials_gui
 
-    root = tk.Tk()
+    root = ctk.CTk()
     root.title("Microbiome Management")
-    icon = tk.PhotoImage(file="./static/icons/plant.ico")
-    root.iconphoto(False, icon)
+    ctk.set_appearance_mode("light") 
+    root._state_before_windows_set_titlebar_color = "zoomed"
 
-    root.geometry(f"{root.winfo_screenwidth()}x{root.winfo_screenheight()}")
-
-    root.state("zoomed")
-
-    style = ttk.Style()
-    style.theme_use("clam")
-
-    notebook = ttk.Notebook(root)
+    notebook = ctk.CTkTabview(root)
     notebook.pack(fill="both", expand=True)
 
-    documentation_frame = ttk.Frame(notebook, width=200, height=400)
-    upload_frame = ttk.Frame(notebook, width=200, height=400)
-    delete_kit_frame = ttk.Frame(notebook, width=200, height=400)
-    delete_data_frame = ttk.Frame(notebook, width=200, height=400)
-    get_data_frame = ttk.Frame(notebook, width=200, height=400)
-    get_kit_frame = ttk.Frame(notebook, width=200, height=400)
-    update_credentials_frame = ttk.Frame(notebook, width=200, height=400)
+    notebook.add("Documentation")
+    notebook.add("Upload Samples")
+    notebook.add("Delete Kit")
+    notebook.add("Delete All Data")
+    notebook.add("Get all the data")
+    notebook.add("Get Kit")
+    notebook.add("Update Credentials")
 
-    notebook.add(documentation_frame, text="Documentation")
-    notebook.add(upload_frame, text="Upload Samples")
-    notebook.add(delete_kit_frame, text="Delete Kit")
-    notebook.add(delete_data_frame, text="Delete All Data")
-    notebook.add(get_data_frame, text="Get all the data")
-    notebook.add(get_kit_frame, text="Get Kit")
-    notebook.add(update_credentials_frame, text="Update Credentials")
-
-    documentation_gui(documentation_frame)
-    upload_samples_gui(upload_frame, notebook)
-    delete_samples_gui(delete_kit_frame, notebook)
-    delete_all_data_gui(delete_data_frame, notebook)
-    get_all_data_gui(get_data_frame, notebook)
-    get_kit_gui(get_kit_frame, notebook)
-    update_credentials_gui(update_credentials_frame, notebook)
+    documentation_gui(notebook.tab("Documentation"))
+    upload_samples_gui(notebook.tab("Upload Samples"), notebook)
+    delete_samples_gui(notebook.tab("Delete Kit"), notebook)
+    delete_all_data_gui(notebook.tab("Delete All Data"), notebook)
+    get_all_data_gui(notebook.tab("Get all the data"), notebook)
+    get_kit_gui(notebook.tab("Get Kit"), notebook)
+    update_credentials_gui(notebook.tab("Update Credentials"), notebook)
 
     root.mainloop()
 

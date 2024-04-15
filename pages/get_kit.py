@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+import customtkinter as ctk
 from tkinter.messagebox import showerror, showinfo
 from tkinter.filedialog import askdirectory
 
@@ -49,6 +49,8 @@ submit_button = None
 location_entry = None
 select_dir_button = None
 percently_label = None
+location_var = None
+kit_number_var = None
 
 
 def get_kit(notebook):
@@ -57,11 +59,11 @@ def get_kit(notebook):
     """
 
     # Step 1: Retrieve selected directory
-    selected_dir = location_entry.get()
+    selected_dir = location_var.get()
 
     # Step 2: Retrieve kit number, display error if not a valid number
     try:
-        selected_kit = int(kit_number_entry.get())
+        selected_kit = int(kit_number_var.get())
     except ValueError:
         # Except "bad" kit id (not a number)
         showerror(
@@ -69,7 +71,7 @@ def get_kit(notebook):
             "You have been entered a kit id that is not a number. please enter a valid kit id.",
         )
         logging.error(
-            f"Not Valid Kit ID ({kit_number_entry.get()}). You have been entered a kit id that is not a number. please enter a valid kit id."
+            f"Not Valid Kit ID ({kit_number_var.get()}). You have been entered a kit id that is not a number. please enter a valid kit id."
         )
         return
 
@@ -78,15 +80,13 @@ def get_kit(notebook):
         return
 
     # Disable the buttons to avoid user interaction during the data downloading process
-    for i in range(0, 7):
-        if i == 5:
-            continue
-        notebook.tab(i, state=tk.DISABLED)
-    kit_number_entry.config(state=tk.DISABLED)
-    submit_button.config(state=tk.DISABLED)
-    location_entry.config(state=tk.DISABLED)
+    notebook.configure(state="disabled")
+    kit_number_entry.configure(state="disabled")
+    select_dir_button.configure(state="disabled")
+    submit_button.configure(state="disabled")
+    location_entry.configure(state="disabled")
 
-    status_label.config(text="Initializing connection...")
+    status_label.configure(text="Initializing connection...")
 
     # Get the data as a Generator
     records_to_get = (
@@ -104,31 +104,28 @@ def get_kit(notebook):
     # If there is no records, then show an error and enable back the buttons
     if len(records_to_get) == 0:
         showerror("No records found", "There are no records found.")
-        status_label.config(text="No records found in Google")
-        location_entry.config(state=tk.NORMAL)
-        select_dir_button.config(state=tk.NORMAL)
-        submit_button.config(state=tk.NORMAL)
-        kit_number_entry.config(state=tk.NORMAL)
-        for i in range(0, 7):
-            if i == 4:
-                continue
-            notebook.tab(i, state=tk.NORMAL)
+        status_label.configure(text="No records found in Google")
+        location_entry.configure(state="normal")
+        select_dir_button.configure(state="normal")
+        submit_button.configure(state="normal")
+        kit_number_entry.configure(state="normal")
+        notebook.configure(state="normal")
         return
 
     # Create a list of records as dictionaries
-    status_label.config(text="Getting Data...")
+    status_label.configure(text="Getting Data...")
     records = []
     for record in records_to_get:
         records.append(record.to_dict())
         progress_counter += 1
-        progress = (progress_counter / total_records) * 100
+        progress = progress_counter / total_records
         progress_var.set(progress)
-        percentage_label.config(text=(("%.2f" % progress) + "%"))
+        percentage_label.configure(text=(("%.2f" % (progress * 100)) + "%"))
 
     # Call the function that saving the data as a csv file
     write_dicts_to_csv(selected_dir, records, selected_kit)
 
-    status_label.config(text="The data has been saved!")
+    status_label.configure(text="The data has been saved!")
 
     # Display success massage
     showinfo(
@@ -140,14 +137,12 @@ def get_kit(notebook):
     logging.info(f"The file was saved successfullt in {selected_dir}")
 
     # Re-enable back all the buttons
-    for i in range(0, 7):
-        if i == 5:
-            continue
-        notebook.tab(i, state=tk.NORMAL)
-    location_entry.config(state=tk.NORMAL)
-    select_dir_button.config(state=tk.NORMAL)
-    submit_button.config(state=tk.NORMAL)
-    kit_number_entry.config(state=tk.NORMAL)
+    notebook.configure(state="normal")
+    location_entry.configure(state="normal")
+    select_dir_button.configure(state="normal")
+    submit_button.configure(state="normal")
+    kit_number_entry.configure(state="normal")
+
 
 
 def start_processing(notebook):
@@ -163,68 +158,71 @@ def select_dir():
 
 
 def get_kit_gui(root, notebook):
-    global kit_number_entry, status_label, progress_var, progress_bar, submit_button, location_entry, select_dir_button, percentage_label
-    title_label = ttk.Label(
-        root, text="Get kit", font=("Helvetica", 16, "bold"), background="#dcdad5"
+    global kit_number_entry, status_label, progress_var, progress_bar, submit_button, location_entry, select_dir_button, percentage_label, location_var, kit_number_var
+    title_label = ctk.CTkLabel(
+        root, text="Get kit", font=("Helvetica", 16, "bold")
     )
     title_label.pack(pady=10)
 
-    kit_label = ttk.Label(
-        root, text="Enter the Kit ID:", font=("Helvetica", 12), background="#dcdad5"
+    kit_label = ctk.CTkLabel(
+        root, text="Enter the Kit ID:", font=("Helvetica", 12)
     )
     kit_label.pack(pady=10)
 
-    kit_number_entry = ttk.Entry(root, width=40, font=("Helvetica", 12))
+    kit_number_var = ctk.StringVar()
+    kit_number_entry = ctk.CTkEntry(root, width=300, font=("Helvetica", 12), textvariable=kit_number_var)
     kit_number_entry.pack(pady=10)
 
-    location_label = ttk.Label(
+    location_label = ctk.CTkLabel(
         root,
         text="Select a folder where you want to save samples:",
-        font=("Helvetica", 12),
-        background="#dcdad5",
+        font=("Helvetica", 12)
     )
     location_label.pack(pady=10)
 
-    location_entry = ttk.Entry(root, width=40, font=("Helvetica", 12))
+    location_var = ctk.StringVar()
+    location_entry = ctk.CTkEntry(root, width=300, font=("Helvetica", 12), textvariable=location_var)
     location_entry.pack(pady=10)
 
-    select_dir_button = tk.Button(
+    select_dir_button = ctk.CTkButton(
         root,
         text="Browse",
         command=select_dir,
-        background="#007acc",
-        fg="white",
+        fg_color=("#007acc", "#007acc"),
+        text_color=("white", "white"),
         font=("Helvetica", 12),
     )
     select_dir_button.pack(pady=10)
 
-    status_label = ttk.Label(
-        root, text="", font=("Helvetica", 12), background="#dcdad5"
+    status_label = ctk.CTkLabel(
+        root, text="", font=("Helvetica", 12)
     )
     status_label.pack(pady=10)
 
-    progress_var = tk.DoubleVar()
-    progress_bar = ttk.Progressbar(
-        root, length=300, variable=progress_var, mode="determinate"
+    progress_var = ctk.DoubleVar()
+    progress_bar = ctk.CTkProgressBar(
+        root, width=300, variable=progress_var, mode="determinate", orientation="horizontal"
     )
     progress_bar.pack(pady=10)
 
-    percentage_label = ttk.Label(
-        root, text="0%", font=("Helvetica", 12), background="#dcdad5"
+    percentage_label = ctk.CTkLabel(
+        root, text="0%", font=("Helvetica", 12), 
     )
     percentage_label.pack()
 
-    status_label = ttk.Label(
-        root, text="", font=("Helvetica", 12), background="#dcdad5"
+    status_label = ctk.CTkLabel(
+        root, text="", font=("Helvetica", 12), 
     )
     status_label.pack()
 
-    submit_button = tk.Button(
+    submit_button = ctk.CTkButton(
         root,
         text="Submit",
         command=lambda: start_processing(notebook),
-        background="#4CAF50",
-        fg="white",
+        fg_color=("#4CAF50", "#4CAF50"),
+        text_color=("white", "white"),
         font=("Helvetica", 12),
+        hover=True,
+        corner_radius=5
     )
     submit_button.pack(pady=10)

@@ -8,9 +8,9 @@ import pandas as pd
 
 
 def merge_data(
-    progress_var: tk.DoubleVar,
-    percentage_label: tk.Label,
-    status_label: tk.Label,
+    progress_var,
+    percentage_label,
+    status_label,
     samples_type,
 ):
     # If the destination directory already exists, delete it
@@ -24,7 +24,7 @@ def merge_data(
     num_files = sum([1 for _ in os.listdir("./kitDataMerger/filtered_data")])
 
     # Set the progress bar text label
-    status_label.config(text="Merging data...")
+    status_label.configure(text="Merging data...")
 
     # For each and every filtered data directory, create a twin directory in the destination directory
     os.makedirs(f"./kitDataMerger/merged_asv_data")
@@ -59,9 +59,9 @@ def merge_data(
         # In case of a split error, count the file as "merged" and continue to the next one
         if not match:
             progress_counter += 1
-            progress = (progress_counter / num_files) * 100
+            progress = progress_counter / num_files
             progress_var.set(progress)
-            percentage_label.config(text=(("%.2f " % progress) + "%"))
+            percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
             continue
 
         # Get the kit id and sample type from the RegEx search
@@ -99,9 +99,9 @@ def merge_data(
 
         # Count the file as "merged", calculate and update the progress
         progress_counter += 1
-        progress = (progress_counter / num_files) * 100
+        progress = progress_counter / num_files
         progress_var.set(progress)
-        percentage_label.config(text=(("%.2f " % progress) + "%"))
+        percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
 
     shutil.rmtree(f"./kitDataMerger/filtered_data")
     return _save_to_csv(mdata, samples_type)

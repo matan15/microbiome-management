@@ -3,8 +3,8 @@ import os
 import shutil
 import threading
 import tkinter as tk
-from tkinter import ttk
 from tkinter import filedialog
+import customtkinter as ctk
 from tkinter.messagebox import showinfo, showerror, showwarning
 
 import logging
@@ -46,12 +46,14 @@ status_sub_label = None
 generate_check = None
 selected_type = None
 samples_type_optionbox = None
+meta_entry_variable = None
+dir_entry_variable = None
 
 
 def upload_samples(notebook):
     # Getting the data dir path, meta data file path and the upload type
-    selected_dir = dir_entry.get()
-    selected_meta = meta_entry.get()
+    selected_dir = dir_entry_variable.get()
+    selected_meta = meta_entry_variable.get()
     upload_type = selected_type.get()
 
     # Making sure that the data dir path and meta data file path are not empty
@@ -59,25 +61,22 @@ def upload_samples(notebook):
         return
 
     # Disable all the buttons to avoid user interaction during the upload.
-    for i in range(0, 7):
-        if i == 1:
-            continue
-        notebook.tab(i, state=tk.DISABLED)
-    submit_button.config(state=tk.DISABLED)
-    select_dir_button.config(state=tk.DISABLED)
-    select_meta_button.config(state=tk.DISABLED)
-    dir_entry.config(state=tk.DISABLED)
-    meta_entry.config(state=tk.DISABLED)
-    generate_check.config(state=tk.DISABLED)
-    samples_type_optionbox.config(state=tk.DISABLED)
+    notebook.configure(state="disabled")
+    submit_button.configure(state="disabled")
+    select_dir_button.configure(state="disabled")
+    select_meta_button.configure(state="disabled")
+    dir_entry.configure(state="disabled")
+    meta_entry.configure(state="disabled")
+    generate_check.configure(state="disabled")
+    samples_type_optionbox.configure(state="disabled")
 
     # Initializing the progress bar
-    percentage_label.config(text="0%")
-    status_label.config(text="Working...")
+    percentage_label.configure(text="0%")
+    status_label.configure(text="Working...")
 
     # If the upload type is Fungi, the program will also search for ids of the Fungis
     if upload_type == "Fungi":
-        status_label.config(text="Geting Fungi Ids")
+        status_label.configure(text="Geting Fungi Ids")
         update_fungi_ids(selected_dir, progress_var, percentage_label)
 
     if filter(
@@ -98,7 +97,7 @@ def upload_samples(notebook):
         )
 
         # Updating the meteorologic data
-        status_label.config(text="Getting weather:")
+        status_label.configure(text="Getting weather:")
         if not update_weather(
             selected_meta, 32, progress_var, percentage_label, status_sub_label
         ):
@@ -118,8 +117,8 @@ def upload_samples(notebook):
                 index_name="microbiome",
             )
 
-        status_label.config(text="Saving data...")
-        status_sub_label.config(text="")
+        status_label.configure(text="Saving data...")
+        status_sub_label.configure(text="")
 
         bad_dir = True
         # Ask for a new destination if merged data already exists in the selected one
@@ -181,8 +180,8 @@ def upload_samples(notebook):
                 continue
 
         # Update the status message when all the files have been merged
-        status_label.config(text="All files has been generated!")
-        status_sub_label.config(text="")
+        status_label.configure(text="All files has been generated!")
+        status_sub_label.configure(text="")
 
     else:
         # Alert if there was any problem with filtering the data
@@ -201,17 +200,14 @@ def upload_samples(notebook):
             )
 
     # Enabeling back all the buttons
-    submit_button.config(state=tk.NORMAL)
-    select_dir_button.config(state=tk.NORMAL)
-    select_meta_button.config(state=tk.NORMAL)
-    dir_entry.config(state=tk.NORMAL)
-    meta_entry.config(state=tk.NORMAL)
-    generate_check.config(state=tk.NORMAL)
-    samples_type_optionbox.config(state=tk.NORMAL)
-    for i in range(0, 7):
-        if i == 1:
-            continue
-        notebook.tab(i, state=tk.NORMAL)
+    submit_button.configure(state="normal")
+    select_dir_button.configure(state="normal")
+    select_meta_button.configure(state="normal")
+    dir_entry.configure(state="normal")
+    meta_entry.configure(state="normal")
+    generate_check.configure(state="normal")
+    samples_type_optionbox.configure(state="normal")
+    notebook.configure(state="normal")
 
 
 def start_processing(notebook):
@@ -235,122 +231,128 @@ def select_file():
 
 
 def upload_samples_gui(root, notebook):
-    global dir_entry, meta_label, meta_entry, select_meta_button, select_dir_button, submit_button, progress_var, progress_bar, percentage_label, status_label, check_var, status_sub_label, generate_check, selected_type, samples_type_optionbox
+    global dir_entry, meta_label, meta_entry, select_meta_button, select_dir_button, submit_button, progress_var, progress_bar, percentage_label, status_label, check_var, status_sub_label, generate_check, selected_type, samples_type_optionbox, dir_entry_variable, meta_entry_variable, samples_type_optionbox
 
     # Create a title for the application
-    title_label = ttk.Label(
+    title_label = ctk.CTkLabel(
         root,
         text="Upload Samples",
         font=("Helvetica", 16, "bold"),
-        background="#dcdad5",
     )
     title_label.pack(pady=10)
 
-    samples_type_label = ttk.Label(
+    samples_type_label = ctk.CTkLabel(
         root,
         text="Select type of samples:",
         font=("Helvetica", 14),
-        background="#dcdad5",
     )
     samples_type_label.pack(pady=10)
 
     # Radio buttons to choose the type of the sample
-    selected_type = tk.StringVar()
-    selected_type.set("Fungi")
-    samples_type_optionbox = ttk.OptionMenu(
-        root, selected_type, "Fungi", "Fungi", "Bacteria"
+    selected_type = ctk.StringVar(value="Fungi")
+    samples_type_optionbox = ctk.CTkOptionMenu(
+        root, values=["Fungi", "Bacteria"], variable=selected_type
     )
     samples_type_optionbox.pack(pady=10)
 
     # Create a label widget for the directory entry
-    dir_label = ttk.Label(
-        root, text="Select a directory:", font=("Helvetica", 14), background="#dcdad5"
+    dir_label = ctk.CTkLabel(
+        root, text="Select a directory:", font=("Helvetica", 14)
     )
     dir_label.pack(pady=10)
 
     # Create an entry widget to display the selected directory path
-    dir_entry = ttk.Entry(root, width=40, font=("Helvetica", 12))
+    dir_entry_variable = ctk.StringVar()
+    dir_entry = ctk.CTkEntry(root, width=300, font=("Helvetica", 12), textvariable=dir_entry_variable)
     dir_entry.pack(pady=10)
 
     # Create a button to select a directory
-    select_dir_button = tk.Button(
+    select_dir_button = ctk.CTkButton(
         root,
         text="Browse",
         command=select_dir,
-        background="#007acc",
-        fg="white",
+        text_color="white",
         font=("Helvetica", 12),
+        hover=True,
+        corner_radius=5
     )
     select_dir_button.pack(pady=10)
 
     # Create a label widget for the Meta Data File
-    meta_label = ttk.Label(
+    meta_label = ctk.CTkLabel(
         root,
         text="Select a meta data file:",
         font=("Helvetica", 14),
-        background="#dcdad5",
     )
     meta_label.pack(pady=10)
 
     # Create an entry widget to display the selected file path
-    meta_entry = ttk.Entry(root, width=40, font=("Helvetica", 12))
+    meta_entry_variable = ctk.StringVar()
+    meta_entry = ctk.CTkEntry(root, width=300, font=("Helvetica", 12), textvariable=meta_entry_variable)
     meta_entry.pack(pady=10)
 
     # Create a button to select a file
-    select_meta_button = tk.Button(
+    select_meta_button = ctk.CTkButton(
         root,
         text="Browse",
         command=select_file,
-        background="#007acc",
-        fg="white",
+        text_color="white",
         font=("Helvetica", 12),
+        hover=True,
+        corner_radius=5
     )
     select_meta_button.pack(pady=10)
 
-    # Create Submit button
-    submit_button = tk.Button(
-        root,
-        text="Submit",
-        command=lambda: start_processing(notebook),
-        background="#4CAF50",
-        fg="white",
-        font=("Helvetica", 12),
-    )
-    submit_button.pack(pady=10)
-
     # Create a progress bar
-    progress_var = tk.DoubleVar()
-    progress_bar = ttk.Progressbar(
-        root, length=300, variable=progress_var, mode="determinate"
+    progress_var = ctk.DoubleVar(value=0)
+    progress_bar = ctk.CTkProgressBar(
+        root,
+        orientation="horizontal",
+        width=300,
+        mode="determinate",
+        variable=progress_var
     )
     progress_bar.pack(pady=10)
 
+
+    # Create Submit button
+    submit_button = ctk.CTkButton(
+        root,
+        text="Submit",
+        command=lambda: start_processing(notebook),
+        text_color="white",
+        font=("Helvetica", 12),
+        fg_color=("#41B06E", "#41B06E"),
+        hover=True,
+        corner_radius=5
+    )
+    submit_button.pack(pady=10)
+
     # Create a label to display the progress percentage
-    percentage_label = ttk.Label(
-        root, text="0%", font=("Helvetica", 12), background="#dcdad5"
+    percentage_label = ctk.CTkLabel(
+        root, text="0%", font=("Helvetica", 12)
     )
     percentage_label.pack()
 
     # Create a label to display the status message
-    status_label = ttk.Label(
-        root, text="", font=("Helvetica", 12), background="#dcdad5"
+    status_label = ctk.CTkLabel(
+        root, text="", font=("Helvetica", 12)
     )
     status_label.pack()
 
-    status_sub_label = ttk.Label(
-        root, text="", font=("Helvetica", 12), background="#dcdad5"
+    status_sub_label = ctk.CTkLabel(
+        root, text="", font=("Helvetica", 12)
     )
     status_sub_label.pack()
 
     # Create a checkbox to generate a command bulk
-    check_var = tk.IntVar()
-    generate_check = tk.Checkbutton(
+    check_var = ctk.IntVar(value=0)
+    generate_check = ctk.CTkCheckBox(
         root,
         text="Upload Samples",
         variable=check_var,
         onvalue=1,
         offvalue=0,
         font=("Helvetica", 14),
-        background="#dcdad5",
     )
     generate_check.pack()

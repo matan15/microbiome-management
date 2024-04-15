@@ -2,14 +2,12 @@ import os
 
 import re
 import shutil
-import tkinter as tk
-
 
 def filter(
-    data_dir: str,
-    progress_var: tk.DoubleVar,
-    percentage_label: tk.Label,
-    status_label: tk.Label,
+    data_dir,
+    progress_var,
+    percentage_label,
+    status_label,
     sample_type,
 ):
     # If the destination direcorty already exists, delete it
@@ -20,7 +18,7 @@ def filter(
     progress_counter = 0
 
     # Set the progress bar text label
-    status_label.config(text="Filtering data...")
+    status_label.configure(text="Filtering data...")
 
     os.makedirs(f"./kitDataMerger/filtered_data")
     if sample_type == "Bacteria":
@@ -36,9 +34,9 @@ def filter(
                     )
 
             progress_counter += 1
-            progress = (progress_counter / num_files) * 100
+            progress = progress_counter / num_files
             progress_var.set(progress)
-            percentage_label.config(text=(("%.2f " % progress) + "%"))
+            percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
 
     elif sample_type == "Fungi":
         num_files = 0
@@ -62,8 +60,8 @@ def filter(
                         )
 
                 progress_counter += 1
-                progress = (progress_counter / num_files) * 100
+                progress = progress_counter / num_files
                 progress_var.set(progress)
-                percentage_label.config(text=(("%.2f " % progress) + "%"))
+                percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
 
     return True  # As a success

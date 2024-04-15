@@ -2,8 +2,7 @@ from tkhtmlview import HTMLLabel
 import markdown
 import tempfile
 import os
-from tkinter import ttk
-
+import customtkinter as ctk
 
 def documentation_gui(root):
     """
@@ -16,8 +15,8 @@ def documentation_gui(root):
         None
 
     """
-    title_label = ttk.Label(
-        root, text="Documentation", font=("Helvetica", 16, "bold"), background="#dcdad5"
+    title_label = ctk.CTkLabel(
+        root, text="Documentation", font=("Helvetica", 16, "bold")
     )
     title_label.pack(pady=10)
     # Read the contents of the README.md file

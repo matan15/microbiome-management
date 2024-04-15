@@ -55,7 +55,7 @@ def _save_docs(progress_var, percentage_label, num_files, index_name):
     """
     progress_counter = 0
     progress_var.set(0)
-    percentage_label.config(text=(("%.2f " % 0) + "%"))
+    percentage_label.configure(text=(("%.2f " % 0) + "%"))
     for file in os.listdir(f"./kitDataMerger/microbiome-public"):
         # read the csv file
         df = pd.read_csv(
@@ -86,9 +86,9 @@ def _save_docs(progress_var, percentage_label, num_files, index_name):
             update_time, rec_ref = db.collection(index_name).add(rec)
 
         progress_counter += 1
-        progress = (progress_counter / num_files) * 100
+        progress = progress_counter / num_files
         progress_var.set(progress)
-        percentage_label.config(text=(("%.2f " % progress) + "%"))
+        percentage_label.configure(text=(("%.2f " % (progress * 100)) + "%"))
 
 
 def fetch_and_index_data(
@@ -107,7 +107,7 @@ def fetch_and_index_data(
     Returns:
     None
     """
-    status_label.config(text="Uploading...")
+    status_label.configure(text="Uploading...")
 
     # Save documents to Google Storage
     _save_docs(

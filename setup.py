@@ -52,6 +52,7 @@ packages = [
     "requests",
     "pytz",
     "numpy",
+    "customtkinter"
 ]
 
 # Set the options for the build
@@ -60,7 +61,7 @@ options = {"build_exe": {"packages": packages, "include_files": includefiles}}
 # Define the setup configuration
 setup(
     name="Microbiome Management",
-    version="2.4",
+    version="2.5",
     options=options,
     executables=executables,
     author="Matan Naydis and Tomer Kimchi",
